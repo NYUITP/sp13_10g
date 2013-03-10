@@ -14,13 +14,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-ACLOCAL_AMFLAGS = -I m4
+PROJECT(mongoodbc)
 
-lib_LTLIBRARIES = libmongoodbc.la
-libmongoodbc_la_SOURCES = src/odbcintf.cpp
-libmongoodbc_la_CXXFLAGS = -g
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-bin_PROGRAMS = breathing
-breathing_SOURCES = test/breathing.cpp
-breathing_LDADD = -lodbc
-breathing_CXXFLAGS = -g
+ADD_LIBRARY(libmongoodbc SHARED src/odbcintf.cpp)
+
+INSTALL(TARGETS libmongoodbc
+        LIBRARY DESTINATION lib
+)
