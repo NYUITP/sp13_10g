@@ -1,3 +1,4 @@
+
 #pragma once
 //  Copyright [2013] Kyle Galloway (kyle.s.galloway@gmail.com)
 //                   Pravish Sood (pravish.sood@gmail.com)
@@ -14,15 +15,15 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-#ifndef MONGOODBC_ENVIRONMENT_HANDLE_H_
-#define MONGOODBC_ENVIRONMENT_HANDLE_H_
+#ifndef MONGOODBC_STATEMENT_HANDLE_H_
+#define MONGOODBC_STATEMENT_HANDLE_H_
 
 namespace mongoodbc {
 
 /*
-* Class implementing an ODBC environment handle.
+* Class implementing an ODBC statement handle.
 */
-class EnvironmentHandle {
+class StatementHandle {
 };
 
 } // close mongoodbc namespace

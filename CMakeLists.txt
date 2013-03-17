@@ -27,6 +27,8 @@ src/connection_handle.h
 src/connection_handle.cpp
 src/environment_handle.h
 src/environment_handle.cpp
+src/statement_handle.h
+src/statement_handle.cpp
 )
 
 ADD_EXECUTABLE(breathing
