@@ -41,11 +41,6 @@ SQLGetInfo(SQLHDBC  connHandle,
            SQLSMALLINT *msglen);
 
 SQLRETURN SQL_API
-SQLConnect(SQLHDBC dbc, SQLCHAR *dsn, SQLSMALLINT dsnLen,
-	   SQLCHAR *uid, SQLSMALLINT uidLen,
-	   SQLCHAR *pwd, SQLSMALLINT pwdLen);
-
-SQLRETURN SQL_API
 SQLDisconnect(SQLHDBC dbc);
 
 SQLRETURN SQL_API

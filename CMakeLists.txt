@@ -31,6 +31,13 @@ src/statement_handle.h
 src/statement_handle.cpp
 )
 
+TARGET_LINK_LIBRARIES(mongoodbc
+mongoclient
+boost_filesystem
+boost_system
+boost_thread
+)
+
 ADD_EXECUTABLE(breathing
 test/breathing.cpp
 )
