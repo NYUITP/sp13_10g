@@ -18,8 +18,22 @@ PROJECT(mongoodbc)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-ADD_LIBRARY(libmongoodbc SHARED src/odbcintf.cpp)
+INCLUDE_DIRECTORIES(src)
 
-INSTALL(TARGETS libmongoodbc
+ADD_LIBRARY(mongoodbc SHARED
+src/odbcintf.cpp
+src/connection.h
+src/connection.cpp
+)
+
+ADD_EXECUTABLE(breathing
+test/breathing.cpp
+)
+
+TARGET_LINK_LIBRARIES(breathing
+odbc
+)
+
+INSTALL(TARGETS mongoodbc
         LIBRARY DESTINATION lib
 )
