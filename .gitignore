@@ -1,0 +1,8 @@
+CMakeCache.txt
+.[^git]*
+CMakeFiles*
+cmake_*
+install_manifest*
+*.so
+*.o
+*~
