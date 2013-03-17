@@ -48,15 +48,6 @@ SQLGetInfo(SQLHDBC connHandle,
 }
 
 SQLRETURN SQL_API
-SQLConnect(SQLHDBC dbc, SQLCHAR *dsn, SQLSMALLINT dsnLen,
-	   SQLCHAR *uid, SQLSMALLINT uidLen,
-	   SQLCHAR *pwd, SQLSMALLINT pwdLen)
-{
-    std::cout << "SQLConnect" << std::endl;
-    return SQL_SUCCESS;
-}
-
-SQLRETURN SQL_API
 SQLDisconnect(SQLHDBC dbc)
 {
     std::cout << "SQLDisconnect" << std::endl;
@@ -144,12 +135,22 @@ SQLDriverConnect(SQLHDBC connectionHandle,
                  SQLUSMALLINT driverCompletion)
 {
     std::cout << "SQLDriverConnect" << std::endl;
+
+    mongoodbc::ConnectionHandle *conn =
+        static_cast<mongoodbc::ConnectionHandle *> (connectionHandle);
+    conn->connect();
+
     return SQL_SUCCESS;
 }
 
 
 // FUNCTIONS BELOW THIS LINE ARE NOT IMPLEMENTED
 extern "C" {
+SQLRETURN SQL_API
+SQLConnect(SQLHDBC dbc, SQLCHAR *dsn, SQLSMALLINT dsnLen,
+	   SQLCHAR *uid, SQLSMALLINT uidLen,
+	   SQLCHAR *pwd, SQLSMALLINT pwdLen);
+
 SQLRETURN SQL_API
 SQLBulkOperations(SQLHSTMT stmt, SQLSMALLINT oper);
 
@@ -396,6 +397,16 @@ SQLExecute(SQLHSTMT stmt);
 
 SQLRETURN SQL_API
 SQLExecDirect(SQLHSTMT stmt, SQLCHAR *query, SQLINTEGER queryLen);
+}
+
+SQLRETURN SQL_API
+SQLConnect(SQLHDBC dbc, SQLCHAR *dsn, SQLSMALLINT dsnLen,
+	   SQLCHAR *uid, SQLSMALLINT uidLen,
+	   SQLCHAR *pwd, SQLSMALLINT pwdLen)
+{
+    assert(0);
+    std::cout << "SQLConnect" << std::endl;
+    return SQL_SUCCESS;
 }
 
 SQLRETURN SQL_API

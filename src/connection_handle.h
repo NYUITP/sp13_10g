@@ -17,12 +17,22 @@
 #ifndef MONGOODBC_CONNECTION_HANDLE_H_
 #define MONGOODBC_CONNECTION_HANDLE_H_
 
+#include <mongo/client/dbclient.h>
+
 namespace mongoodbc {
 
 /*
 * Class implementing an ODBC connection handle.
 */
 class ConnectionHandle {
+    // The actual connection to the mongoDB database
+    mongo::DBClientConnection _conn;
+  public:
+    /*
+    * This method establishes a connection to the underlying mongoDB.
+    * @return 0 on success, non-zero otherwise
+    */
+    int connect();
 };
 
 } // close mongoodbc namespace
