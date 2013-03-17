@@ -21,11 +21,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 INCLUDE_DIRECTORIES(src)
 
 ADD_LIBRARY(mongoodbc SHARED
+src/odbcintf.h
 src/odbcintf.cpp
-src/connectionhandle.h
-src/connectionhandle.cpp
-src/environmenthandle.h
-src/environmenthandle.cpp
+src/connection_handle.h
+src/connection_handle.cpp
+src/environment_handle.h
+src/environment_handle.cpp
 )
 
 ADD_EXECUTABLE(breathing

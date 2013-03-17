@@ -14,61 +14,13 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include <connectionhandle.h>
-#include <environmenthandle.h>
+#include <odbcintf.h>
 
-#include <sql.h>
-#include <sqlext.h>
+#include <connection_handle.h>
+#include <environment_handle.h>
 
 #include <iostream>
 #include <assert.h>
-
-extern "C" {
-
-SQLRETURN SQL_API
-SQLGetDiagRec(SQLSMALLINT handleType,
-              SQLHANDLE handle,
-              SQLSMALLINT recordNum,
-	          SQLCHAR *sqlstate,
-              SQLINTEGER *nativeerr,
-              SQLCHAR *msg,
-	          SQLSMALLINT buflen,
-              SQLSMALLINT *msglen);
-
-SQLRETURN SQL_API
-SQLGetInfo(SQLHDBC  connHandle,
-           SQLUSMALLINT infoType,
-           SQLPOINTER infoValuePtr,
-           SQLSMALLINT buflen,
-           SQLSMALLINT *msglen);
-
-SQLRETURN SQL_API
-SQLConnect(SQLHDBC dbc, SQLCHAR *dsn, SQLSMALLINT dsnLen,
-	   SQLCHAR *uid, SQLSMALLINT uidLen,
-	   SQLCHAR *pwd, SQLSMALLINT pwdLen);
-
-SQLRETURN SQL_API
-SQLDisconnect(SQLHDBC dbc);
-
-SQLRETURN SQL_API
-SQLAllocHandle(SQLSMALLINT handleType,
-               SQLHANDLE inputHandle,
-               SQLHANDLE *outputHandle);
-
-SQLRETURN SQL_API
-SQLFreeHandle(SQLSMALLINT handleType, SQLHANDLE handle);
-
-SQLRETURN SQL_API
-SQLDriverConnect(SQLHDBC connectionHandle,
-                 SQLHWND windowHandle,
-		         SQLCHAR *inConnectString,
-                 SQLSMALLINT inConnectStringLen,
-		         SQLCHAR *connOut,
-                 SQLSMALLINT outConnectString,
-		         SQLSMALLINT *outConnectStringLen,
-                 SQLUSMALLINT driverCompletion);
-
-}
 
 SQLRETURN SQL_API
 SQLGetDiagRec(SQLSMALLINT handleType,
