@@ -22,8 +22,10 @@ INCLUDE_DIRECTORIES(src)
 
 ADD_LIBRARY(mongoodbc SHARED
 src/odbcintf.cpp
-src/connection.h
-src/connection.cpp
+src/connectionhandle.h
+src/connectionhandle.cpp
+src/environmenthandle.h
+src/environmenthandle.cpp
 )
 
 ADD_EXECUTABLE(breathing
