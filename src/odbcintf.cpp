@@ -72,14 +72,18 @@ SQLAllocHandle(SQLSMALLINT handleType,
         *outputHandle = static_cast<SQLHANDLE> (env);
     }
     else if (SQL_HANDLE_DBC == handleType) {
+        mongoodbc::EnvironmentHandle *env =
+            static_cast<mongoodbc::EnvironmentHandle *> (inputHandle);
         mongoodbc::ConnectionHandle *conn =
-            new mongoodbc::ConnectionHandle();
+            new mongoodbc::ConnectionHandle(env);
         std::cout << "Successfully allocated connection handle" << std::endl;
         *outputHandle = static_cast<SQLHANDLE> (conn);
     }
     else if (SQL_HANDLE_STMT == handleType) {
+        mongoodbc::ConnectionHandle *conn =
+            static_cast<mongoodbc::ConnectionHandle *> (inputHandle);
         mongoodbc::StatementHandle *stmt =
-            new mongoodbc::StatementHandle();
+            new mongoodbc::StatementHandle(conn);
         std::cout << "Successfully allocated statement handle" << std::endl;
         *outputHandle = static_cast<SQLHANDLE> (stmt);
     }

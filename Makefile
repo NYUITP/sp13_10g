@@ -162,6 +162,32 @@ mongoodbc/fast:
 	$(MAKE) -f CMakeFiles/mongoodbc.dir/build.make CMakeFiles/mongoodbc.dir/build
 .PHONY : mongoodbc/fast
 
+#=============================================================================
+# Target rules for targets named gtest
+
+# Build rule for target.
+gtest: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 gtest
+.PHONY : gtest
+
+# fast build rule for target.
+gtest/fast:
+	$(MAKE) -f gtest-1.6.0/CMakeFiles/gtest.dir/build.make gtest-1.6.0/CMakeFiles/gtest.dir/build
+.PHONY : gtest/fast
+
+#=============================================================================
+# Target rules for targets named gtest_main
+
+# Build rule for target.
+gtest_main: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 gtest_main
+.PHONY : gtest_main
+
+# fast build rule for target.
+gtest_main/fast:
+	$(MAKE) -f gtest-1.6.0/CMakeFiles/gtest_main.dir/build.make gtest-1.6.0/CMakeFiles/gtest_main.dir/build
+.PHONY : gtest_main/fast
+
 src/connection_handle.o: src/connection_handle.cpp.o
 .PHONY : src/connection_handle.o
 
@@ -296,6 +322,8 @@ help:
 	@echo "... list_install_components"
 	@echo "... mongoodbc"
 	@echo "... rebuild_cache"
+	@echo "... gtest"
+	@echo "... gtest_main"
 	@echo "... src/connection_handle.o"
 	@echo "... src/connection_handle.i"
 	@echo "... src/connection_handle.s"

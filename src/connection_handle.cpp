@@ -15,11 +15,12 @@
 //  limitations under the License.
 
 #include <connection_handle.h>
+#include <environment_handle.h>
 
 namespace mongoodbc {
 
 ConnectionHandle::ConnectionHandle(EnvironmentHandle *envHandle)
-    : _envHandle(endHandle)
+    : _envHandle(envHandle)
 {
 }
 

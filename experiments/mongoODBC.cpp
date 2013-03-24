@@ -1,14 +1,12 @@
 // mongoODBC.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
-
 
 // #define BOOST_SPIRIT_DEBUG
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-namespace qi    = boost::spirit::qi;
+namespace qi = boost::spirit::qi;
 
 struct SelectStatement
 {

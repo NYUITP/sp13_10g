@@ -16,6 +16,7 @@
 //  limitations under the License.
 
 #include <statement_handle.h>
+#include <connection_handle.h>
 
 namespace mongoodbc {
 

@@ -1,4 +1,3 @@
-
 #pragma once
 //  Copyright [2013] Kyle Galloway (kyle.s.galloway@gmail.com)
 //                   Pravish Sood (pravish.sood@gmail.com)
@@ -19,6 +18,8 @@
 #define MONGOODBC_STATEMENT_HANDLE_H_
 
 namespace mongoodbc {
+
+class ConnectionHandle;
 
 /*
 * Class implementing an ODBC statement handle.
