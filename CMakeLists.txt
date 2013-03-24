@@ -14,11 +14,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-PROJECT(mongoodbc)
-
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-INCLUDE_DIRECTORIES(src)
+PROJECT(mongoodbc)
+
+SET(mongoodbc_VERSION_MAJOR 0)
+SET(mongoodbc_VERSION_MINOR 1)
+
+SET(PROJECT_SOURCE_DIR src)
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 
 ADD_LIBRARY(mongoodbc SHARED
 src/odbcintf.h

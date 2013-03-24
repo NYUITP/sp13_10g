@@ -17,3 +17,12 @@
 
 #include <statement_handle.h>
 
+namespace mongoodbc {
+
+StatementHandle::StatementHandle(ConnectionHandle *connHandle)
+    : _connHandle(connHandle)
+{
+}
+
+} // close mongoodbc namespace
+

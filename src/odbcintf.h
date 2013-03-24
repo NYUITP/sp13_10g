@@ -61,6 +61,10 @@ SQLDriverConnect(SQLHDBC connectionHandle,
 		         SQLSMALLINT *outConnectStringLen,
                  SQLUSMALLINT driverCompletion);
 
+SQLRETURN SQL_API
+SQLExecDirect(SQLHSTMT statementHandle,
+              SQLCHAR *query,
+              SQLINTEGER queryLen);
 }
 
 #endif

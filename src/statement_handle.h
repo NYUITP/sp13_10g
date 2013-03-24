@@ -24,6 +24,12 @@ namespace mongoodbc {
 * Class implementing an ODBC statement handle.
 */
 class StatementHandle {
+    // The connection handle from which this handle was created,
+    // held, not owned
+    ConnectionHandle *_connHandle;
+
+  public:
+    StatementHandle(ConnectionHandle *connHandle);
 };
 
 } // close mongoodbc namespace

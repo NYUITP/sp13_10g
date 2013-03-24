@@ -65,7 +65,21 @@ main(int arc, char **argv)
                 break;
             }
         } while(SQL_SUCCESS == diagRet);
+        // free connection handle
+        SQLFreeHandle(SQL_HANDLE_DBC, dbHandle);
+
+        // free environment handle
+        SQLFreeHandle(SQL_HANDLE_ENV, envHandle);
+        return -1;
     }
+
+    SQLHSTMT stmtHandle;
+    SQLAllocHandle(SQL_HANDLE_STMT, dbHandle, &stmtHandle);
+
+    SQLExecDirect(stmtHandle, (SQLCHAR*)"select * from test", SQL_NTS);
+
+    // free statement handle
+    SQLFreeHandle(SQL_HANDLE_STMT, stmtHandle);
 
     // free connection handle
     SQLFreeHandle(SQL_HANDLE_DBC, dbHandle);

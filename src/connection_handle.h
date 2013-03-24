@@ -25,6 +25,10 @@ namespace mongoodbc {
 * Class implementing an ODBC connection handle.
 */
 class ConnectionHandle {
+    // The environment handle from which this connection handle was created
+    // held, not owned.
+    EnvironmentHandle *_envHandle;
+
     // The actual connection to the mongoDB database
     mongo::DBClientConnection _conn;
   public:

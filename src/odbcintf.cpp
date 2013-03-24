@@ -18,6 +18,7 @@
 
 #include <connection_handle.h>
 #include <environment_handle.h>
+#include <statement_handle.h>
 
 #include <iostream>
 #include <assert.h>
@@ -77,7 +78,10 @@ SQLAllocHandle(SQLSMALLINT handleType,
         *outputHandle = static_cast<SQLHANDLE> (conn);
     }
     else if (SQL_HANDLE_STMT == handleType) {
-        return SQL_ERROR;
+        mongoodbc::StatementHandle *stmt =
+            new mongoodbc::StatementHandle();
+        std::cout << "Successfully allocated statement handle" << std::endl;
+        *outputHandle = static_cast<SQLHANDLE> (stmt);
     }
     else if (SQL_HANDLE_DESC == handleType) {
         return SQL_ERROR;
@@ -140,6 +144,15 @@ SQLDriverConnect(SQLHDBC connectionHandle,
         static_cast<mongoodbc::ConnectionHandle *> (connectionHandle);
     conn->connect();
 
+    return SQL_SUCCESS;
+}
+
+SQLRETURN SQL_API
+SQLExecDirect(SQLHSTMT statementHandle,
+              SQLCHAR *query,
+              SQLINTEGER queryLen)
+{
+    std::cout << "SQLExecDirect" << std::endl;
     return SQL_SUCCESS;
 }
 
@@ -394,9 +407,6 @@ SQLPrepare(SQLHSTMT stmt, SQLCHAR *query, SQLINTEGER queryLen);
 
 SQLRETURN SQL_API
 SQLExecute(SQLHSTMT stmt);
-
-SQLRETURN SQL_API
-SQLExecDirect(SQLHSTMT stmt, SQLCHAR *query, SQLINTEGER queryLen);
 }
 
 SQLRETURN SQL_API
@@ -946,14 +956,6 @@ SQLExecute(SQLHSTMT stmt)
 {
     assert(0);
     std::cout << "SQLExecute" << std::endl;
-    return 0;
-}
-
-SQLRETURN SQL_API
-SQLExecDirect(SQLHSTMT stmt, SQLCHAR *query, SQLINTEGER queryLen)
-{
-    assert(0);
-    std::cout << "SQLExecDirect" << std::endl;
     return 0;
 }
 

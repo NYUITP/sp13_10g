@@ -18,6 +18,11 @@
 
 namespace mongoodbc {
 
+ConnectionHandle::ConnectionHandle(EnvironmentHandle *envHandle)
+    : _envHandle(endHandle)
+{
+}
+
 int ConnectionHandle::connect()
 {
     try {
