@@ -29,22 +29,49 @@ TEST(SelectParseTest, SelectStarParseTest)
     std::string::const_iterator end = str.end();
     try
     {
-        bool ok = boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt);
-        if (ok)
-        {
-            std::cout << "parsing of '"
-                      << str
-                      << "' successful - result: "
-                      << stmt
-                      << std::endl;
-        }
-        else
-        {
-            std::cerr << "parsing of '"
-                      << str
-                      << "' failed"
-                      << std::endl;
-        }
+        ASSERT_TRUE(
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
+        std::cout << "STMT: " << stmt << std::endl;
+    }
+    catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
+    {
+        std::string fragment(ex.first, ex.last);
+        std::cerr << ex.what() << "'" << fragment << "'" << std::endl;
+    }
+}
+
+TEST(SelectParseTest, SelectAllStarParseTest)
+{
+    mongoodbc::SQLParser<std::string::const_iterator> parser;
+    mongoodbc::SQLSelectStatement stmt;
+    std::string str("SELECT ALL * FROM table");
+    std::string::const_iterator iter = str.begin();
+    std::string::const_iterator end = str.end();
+    try
+    {
+        ASSERT_TRUE(
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
+        std::cout << "STMT: " << stmt << std::endl;
+    }
+    catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
+    {
+        std::string fragment(ex.first, ex.last);
+        std::cerr << ex.what() << "'" << fragment << "'" << std::endl;
+    }
+}
+
+TEST(SelectParseTest, SelectDistinctStarParseTest)
+{
+    mongoodbc::SQLParser<std::string::const_iterator> parser;
+    mongoodbc::SQLSelectStatement stmt;
+    std::string str("SELECT DISTINCT * FROM table");
+    std::string::const_iterator iter = str.begin();
+    std::string::const_iterator end = str.end();
+    try
+    {
+        ASSERT_TRUE(
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
+        std::cout << "STMT: " << stmt << std::endl;
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {

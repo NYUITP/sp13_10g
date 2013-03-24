@@ -53,9 +53,10 @@ SQLParser<It>::SQLParser()
     _tables %= (_userDefinedName % ',');
 
     _start %= ascii::no_case["select"]
-             >> '*'
+             >> -(ascii::no_case[ascii::string("all")] | ascii::no_case[ascii::string("distinct")])
+             >> qi::matches['*']
              >> ascii::no_case["from"]
-             >> _tables;
+             >> -_tables;
 
     BOOST_SPIRIT_DEBUG_NODE(_start);
     BOOST_SPIRIT_DEBUG_NODE(_tables);

@@ -21,6 +21,7 @@
 
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/variant/variant.hpp>
 
 #include <ostream>
 #include <string>
@@ -32,11 +33,11 @@ namespace mongoodbc {
 * In memory representation of an SQL SELECT statement.
 */
 struct SQLSelectStatement {
-    bool _all;
-    bool _distinct;
+    typedef boost::variant<std::string, std::string> boolBoolVariant;
+    boost::optional<boolBoolVariant> _allDistinct;
     bool _star;
     std::vector<std::string> _tableRefList;
-    SQLElementSearchCondition _searchCondition;
+    boost::optional<SQLElementSearchCondition> _searchCondition;
 
 };
 inline std::ostream& operator<<(std::ostream& stream, const SQLSelectStatement& rhs);
@@ -55,8 +56,8 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
     }
 
     stream << "SELECT"
-           << (rhs._all ? " ALL" : "")
-           << (rhs._distinct ? " DISTINCT" : "")
+           << (rhs._allDistinct ? " " : "")
+           << (rhs._allDistinct ? *rhs._allDistinct : "")
            << (rhs._star ? " *" : "")
            << " FROM " << tables
            << " WHERE " << rhs._searchCondition;
@@ -65,6 +66,9 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
 }
 
 BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLSelectStatement,
+                          (boost::optional<mongoodbc::SQLSelectStatement::boolBoolVariant>,
+                           _allDistinct)
+                          (bool, _star)
                           (std::vector<std::string>, _tableRefList));
 
 #endif
