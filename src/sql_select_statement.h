@@ -33,8 +33,8 @@ namespace mongoodbc {
 * In memory representation of an SQL SELECT statement.
 */
 struct SQLSelectStatement {
-    typedef boost::variant<std::string, std::string> boolBoolVariant;
-    boost::optional<boolBoolVariant> _allDistinct;
+    typedef boost::variant<std::string, std::string> strStrVariant;
+    boost::optional<strStrVariant> _allDistinct;
     bool _star;
     std::vector<std::string> _tableRefList;
     boost::optional<SQLElementSearchCondition> _searchCondition;
@@ -66,7 +66,7 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
 }
 
 BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLSelectStatement,
-                          (boost::optional<mongoodbc::SQLSelectStatement::boolBoolVariant>,
+                          (boost::optional<mongoodbc::SQLSelectStatement::strStrVariant>,
                            _allDistinct)
                           (bool, _star)
                           (std::vector<std::string>, _tableRefList));
