@@ -27,6 +27,9 @@
 #include <string>
 #include <vector>
 
+namespace qi = boost::spirit::qi;
+namespace ascii = boost::spirit::ascii;
+
 namespace mongoodbc {
 
 /*
@@ -41,6 +44,28 @@ struct SQLSelectStatement {
 
 };
 inline std::ostream& operator<<(std::ostream& stream, const SQLSelectStatement& rhs);
+
+/*
+*
+*/
+template <typename It>
+struct SQLSelectStatementParser : qi::grammar<It, SQLSelectStatement(), ascii::space_type> {
+    qi::rule<It, SQLSelectStatement(), ascii::space_type> _rule;
+    SQLSelectStatementParser();
+};
+
+template <typename It>
+SQLSelectStatementParser<It>::SQLSelectStatementParser()
+    : SQLSelectStatementParser::base_type(_rule)
+{
+    _rule %= ascii::no_case["select"]
+             >> -(ascii::no_case[ascii::string("all")] | ascii::no_case[ascii::string("distinct")])
+             >> qi::matches['*']
+             >> ascii::no_case["from"]
+             >> (qi::lexeme[ascii::alpha >> *ascii::alnum] % ',');
+
+    BOOST_SPIRIT_DEBUG_NODE(_rule);
+};
 
 } // close mongoodbc namespace
 

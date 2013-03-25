@@ -22,6 +22,7 @@
 
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/variant/variant.hpp>
 
 #include <string>
 #include <vector>
@@ -32,15 +33,19 @@ namespace ascii = boost::spirit::ascii;
 namespace mongoodbc {
 
 /*
+* Type representing all possible SQL statements.
+*/
+typedef boost::variant<SQLSelectStatement, bool> SQLStatement;
+
+/*
 * Class implementing an SQL parser for the minimal set of SQL required by ODBC.
 */
 template <typename It>
-struct SQLParser : qi::grammar<It, SQLSelectStatement(), ascii::space_type> {
+struct SQLParser : qi::grammar<It, SQLStatement(), ascii::space_type> {
   private:
-    qi::rule<It, std::vector<std::string>(), ascii::space_type> _tables;
-    //qi::rule<It, SQLElementSearchCondition(), ascii::space_type> _searchCond;
-    qi::rule<It, SQLSelectStatement(), ascii::space_type> _start;
-    qi::rule<It, std::string(), ascii::space_type> _userDefinedName;
+    qi::rule<It, SQLStatement(), ascii::space_type> _start;
+
+    SQLSelectStatementParser<It> _selectStmtParser;
   public:
     SQLParser();
 };
@@ -49,18 +54,8 @@ template <typename It>
 SQLParser<It>::SQLParser()
     : SQLParser::base_type(_start)
 {
-    _userDefinedName %= qi::lexeme[ascii::alpha >> *ascii::alnum];
-    _tables %= (_userDefinedName % ',');
-
-    _start %= ascii::no_case["select"]
-             >> -(ascii::no_case[ascii::string("all")] | ascii::no_case[ascii::string("distinct")])
-             >> qi::matches['*']
-             >> ascii::no_case["from"]
-             >> -_tables;
-
+    _start %= _selectStmtParser._rule | qi::attr(false);
     BOOST_SPIRIT_DEBUG_NODE(_start);
-    BOOST_SPIRIT_DEBUG_NODE(_tables);
-    BOOST_SPIRIT_DEBUG_NODE(_userDefinedName);
 }
 
 } // close mongoodbc namespace

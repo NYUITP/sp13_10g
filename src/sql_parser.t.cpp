@@ -23,7 +23,7 @@
 TEST(SelectParseTest, SelectStarParseTest)
 {
     mongoodbc::SQLParser<std::string::const_iterator> parser;
-    mongoodbc::SQLSelectStatement stmt;
+    mongoodbc::SQLStatement stmt;
     std::string str("SELECT * FROM table");
     std::string::const_iterator iter = str.begin();
     std::string::const_iterator end = str.end();
@@ -43,7 +43,7 @@ TEST(SelectParseTest, SelectStarParseTest)
 TEST(SelectParseTest, SelectAllStarParseTest)
 {
     mongoodbc::SQLParser<std::string::const_iterator> parser;
-    mongoodbc::SQLSelectStatement stmt;
+    mongoodbc::SQLStatement stmt;
     std::string str("SELECT ALL * FROM table");
     std::string::const_iterator iter = str.begin();
     std::string::const_iterator end = str.end();
@@ -63,7 +63,7 @@ TEST(SelectParseTest, SelectAllStarParseTest)
 TEST(SelectParseTest, SelectDistinctStarParseTest)
 {
     mongoodbc::SQLParser<std::string::const_iterator> parser;
-    mongoodbc::SQLSelectStatement stmt;
+    mongoodbc::SQLStatement stmt;
     std::string str("SELECT DISTINCT * FROM table");
     std::string::const_iterator iter = str.begin();
     std::string::const_iterator end = str.end();
