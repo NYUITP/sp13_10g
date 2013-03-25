@@ -46,7 +46,7 @@ struct SQLSelectStatement {
 inline std::ostream& operator<<(std::ostream& stream, const SQLSelectStatement& rhs);
 
 /*
-*
+* Parser for SQL SELECT statements.
 */
 template <typename It>
 struct SQLSelectStatementParser : qi::grammar<It, SQLSelectStatement(), ascii::space_type> {
