@@ -47,6 +47,10 @@ src/sql_element_search_condition.h
 src/sql_element_search_condition.cpp
 src/sql_element_expression.h
 src/sql_element_expression.cpp
+src/sql_element_primary.h
+src/sql_element_primary.cpp
+src/sql_element_column_name.h
+src/sql_element_column_name.cpp
 )
 
 TARGET_LINK_LIBRARIES(mongoodbc
@@ -58,9 +62,18 @@ boost_thread
 
 # unit tests
 ADD_EXECUTABLE(sql_parser_unittest
-src/sql_parser.t.cpp)
+src/sql_parser.t.cpp
+)
 
 TARGET_LINK_LIBRARIES(sql_parser_unittest
+mongoodbc
+gtest)
+
+ADD_EXECUTABLE(sql_element_column_name_unittest
+src/sql_element_column_name.t.cpp
+)
+
+TARGET_LINK_LIBRARIES(sql_element_column_name_unittest
 mongoodbc
 gtest)
 
