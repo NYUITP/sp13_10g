@@ -24,6 +24,27 @@
 #include <assert.h>
 
 SQLRETURN SQL_API
+SQLGetEnvAttr(SQLHENV environmentHandle,
+              SQLINTEGER attribute,
+              SQLPOINTER valuePtr,
+              SQLINTEGER bufferLength,
+              SQLINTEGER *stringLenPtr)
+{
+    std::cout << "SQLGetEnvAttr" << std::endl;
+    mongoodbc::EnvironmentHandle *env =
+        static_cast<mongoodbc::EnvironmentHandle *> (environmentHandle);
+    switch(attribute) {
+      case SQL_ATTR_ODBC_VERSION: {
+        *(SQLINTEGER *)valuePtr = SQL_OV_ODBC3;
+      } break;
+      default: {
+      } break;
+    }
+
+    return SQL_SUCCESS;
+}
+
+SQLRETURN SQL_API
 SQLGetDiagRec(SQLSMALLINT handleType,
               SQLHANDLE handle,
               SQLSMALLINT recordNum,
@@ -149,6 +170,19 @@ SQLDriverConnect(SQLHDBC connectionHandle,
     conn->connect();
 
     return SQL_SUCCESS;
+}
+
+SQLRETURN SQL_API
+SQLTables(SQLHSTMT statementHandle,
+	      SQLCHAR *catalogName,
+          SQLSMALLINT catalogNameLen,
+	      SQLCHAR *schemaName,
+          SQLSMALLINT schemaNameLen,
+	      SQLCHAR *tableName,
+          SQLSMALLINT tableNameLen,
+	      SQLCHAR *tableType,
+          SQLSMALLINT tableTypeLen)
+{
 }
 
 SQLRETURN SQL_API
@@ -350,13 +384,6 @@ SQLCloseCursor(SQLHSTMT stmt);
 SQLRETURN SQL_API
 SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT col, SQLSMALLINT type,
 	   SQLPOINTER val, SQLLEN max, SQLLEN *lenp);
-
-SQLRETURN SQL_API
-SQLTables(SQLHSTMT stmt,
-	  SQLCHAR *cat, SQLSMALLINT catLen,
-	  SQLCHAR *schema, SQLSMALLINT schemaLen,
-	  SQLCHAR *table, SQLSMALLINT tableLen,
-	  SQLCHAR *type, SQLSMALLINT typeLen);
 
 SQLRETURN SQL_API
 SQLColumns(SQLHSTMT stmt,
@@ -821,18 +848,6 @@ SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT col, SQLSMALLINT type,
 {
     assert(0);
     std::cout << "SQLBindCol" << std::endl;
-    return 0;
-}
-
-SQLRETURN SQL_API
-SQLTables(SQLHSTMT stmt,
-	  SQLCHAR *cat, SQLSMALLINT catLen,
-	  SQLCHAR *schema, SQLSMALLINT schemaLen,
-	  SQLCHAR *table, SQLSMALLINT tableLen,
-	  SQLCHAR *type, SQLSMALLINT typeLen)
-{
-    assert(0);
-    std::cout << "SQLTables" << std::endl;
     return 0;
 }
 

@@ -24,6 +24,13 @@
 extern "C" {
 
 SQLRETURN SQL_API
+SQLGetEnvAttr(SQLHENV environmentHandle,
+              SQLINTEGER attribute,
+              SQLPOINTER valuePtr,
+              SQLINTEGER bufferLength,
+              SQLINTEGER *stringLenPtr);
+
+SQLRETURN SQL_API
 SQLGetDiagRec(SQLSMALLINT handleType,
               SQLHANDLE handle,
               SQLSMALLINT recordNum,
@@ -34,7 +41,7 @@ SQLGetDiagRec(SQLSMALLINT handleType,
               SQLSMALLINT *msglen);
 
 SQLRETURN SQL_API
-SQLGetInfo(SQLHDBC  connHandle,
+SQLGetInfo(SQLHDBC connHandle,
            SQLUSMALLINT infoType,
            SQLPOINTER infoValuePtr,
            SQLSMALLINT buflen,
@@ -60,6 +67,17 @@ SQLDriverConnect(SQLHDBC connectionHandle,
                  SQLSMALLINT outConnectString,
 		         SQLSMALLINT *outConnectStringLen,
                  SQLUSMALLINT driverCompletion);
+
+SQLRETURN SQL_API
+SQLTables(SQLHSTMT statementHandle,
+	      SQLCHAR *catalogName,
+          SQLSMALLINT catalogNameLen,
+	      SQLCHAR *schemaName,
+          SQLSMALLINT schemaNameLen,
+	      SQLCHAR *tableName,
+          SQLSMALLINT tableNameLen,
+	      SQLCHAR *tableType,
+          SQLSMALLINT tableTypeLen);
 
 SQLRETURN SQL_API
 SQLExecDirect(SQLHSTMT statementHandle,
