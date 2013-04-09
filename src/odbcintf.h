@@ -31,6 +31,13 @@ SQLGetEnvAttr(SQLHENV environmentHandle,
               SQLINTEGER *stringLenPtr);
 
 SQLRETURN SQL_API
+SQLGetStmtAttr(SQLHSTMT stmtHandle,
+               SQLINTEGER attribute,
+               SQLPOINTER valuePtr,
+	           SQLINTEGER bufferLength,
+               SQLINTEGER *stringLenPtr);
+
+SQLRETURN SQL_API
 SQLGetDiagRec(SQLSMALLINT handleType,
               SQLHANDLE handle,
               SQLSMALLINT recordNum,

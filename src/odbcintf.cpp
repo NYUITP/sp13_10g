@@ -45,6 +45,15 @@ SQLGetEnvAttr(SQLHENV environmentHandle,
 }
 
 SQLRETURN SQL_API
+SQLGetStmtAttr(SQLHSTMT stmtHandle,
+               SQLINTEGER attribute,
+               SQLPOINTER valuePtr,
+	           SQLINTEGER bufferLength,
+               SQLINTEGER *stringLenPtr)
+{
+}
+
+SQLRETURN SQL_API
 SQLGetDiagRec(SQLSMALLINT handleType,
               SQLHANDLE handle,
               SQLSMALLINT recordNum,
@@ -138,6 +147,10 @@ SQLFreeHandle(SQLSMALLINT handleType, SQLHANDLE handle)
         std::cout << "Successfully freed connection handle" << std::endl;
     }
     else if (SQL_HANDLE_STMT == handleType) {
+        mongoodbc::StatementHandle *stmt =
+            static_cast<mongoodbc::StatementHandle *> (handle);
+        delete stmt;
+        std::cout << "Successfully freed statement handle" << std::endl;
         return SQL_ERROR;
     }
     else if (SQL_HANDLE_DESC == handleType) {
@@ -337,15 +350,8 @@ SQLGetDiagField(SQLSMALLINT htype, SQLHANDLE handle, SQLSMALLINT recno,
 		SQLSMALLINT buflen, SQLSMALLINT *stringlen);
 
 SQLRETURN SQL_API
-SQLGetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER val,
-	       SQLINTEGER bufmax, SQLINTEGER *buflen);
-
-SQLRETURN SQL_API
 SQLSetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER val,
 	       SQLINTEGER buflen);
-
-SQLRETURN SQL_API
-SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT opt, SQLPOINTER param);
 
 SQLRETURN SQL_API
 SQLSetPos(SQLHSTMT stmt, SQLSETPOSIROW row, SQLUSMALLINT op, SQLUSMALLINT lock);
@@ -733,28 +739,11 @@ SQLGetDiagField(SQLSMALLINT htype, SQLHANDLE handle, SQLSMALLINT recno,
 }
 
 SQLRETURN SQL_API
-SQLGetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER val,
-	       SQLINTEGER bufmax, SQLINTEGER *buflen)
-{
-    assert(0);
-    std::cout << "SQLGetStmtAttr" << std::endl;
-    return 0;
-}
-
-SQLRETURN SQL_API
 SQLSetStmtAttr(SQLHSTMT stmt, SQLINTEGER attr, SQLPOINTER val,
 	       SQLINTEGER buflen)
 {
     assert(0);
     std::cout << "SQLSetStmtAttr" << std::endl;
-    return 0;
-}
-
-SQLRETURN SQL_API
-SQLGetStmtOption(SQLHSTMT stmt, SQLUSMALLINT opt, SQLPOINTER param)
-{
-    assert(0);
-    std::cout << "SQLGetStmtOption" << std::endl;
     return 0;
 }
 
