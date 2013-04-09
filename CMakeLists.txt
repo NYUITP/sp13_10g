@@ -47,8 +47,6 @@ src/sql_element_search_condition.h
 src/sql_element_search_condition.cpp
 src/sql_element_expression.h
 src/sql_element_expression.cpp
-src/sql_element_primary.h
-src/sql_element_primary.cpp
 src/sql_element_column_name.h
 src/sql_element_column_name.cpp
 )
