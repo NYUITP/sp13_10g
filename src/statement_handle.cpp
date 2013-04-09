@@ -25,5 +25,26 @@ StatementHandle::StatementHandle(ConnectionHandle *connHandle)
 {
 }
 
+SQLRETURN StatementHandle::getDbs(std::list<std::string> *dbs)
+{
+    int rc = _connHandle->getDbNames(dbs);
+    if (0 != rc) {
+        return SQL_ERROR;
+    }
+
+    return SQL_SUCCESS;
+}
+
+SQLRETURN StatementHandle::getCollections(const std::string& db,
+                                          std::list<std::string> *collections)
+{
+    int rc = _connHandle->getCollectionNames(db, collections);
+    if (0 != rc) {
+        return SQL_ERROR;
+    }
+
+    return SQL_SUCCESS;
+}
+
 } // close mongoodbc namespace
 

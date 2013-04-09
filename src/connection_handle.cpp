@@ -37,5 +37,34 @@ int ConnectionHandle::connect()
     return 0;
 }
 
+int ConnectionHandle::getDbNames(std::list<std::string> *dbs)
+{
+    try {
+        *dbs = _conn.getDatabaseNames();
+    } catch (const mongo::DBException &e) {
+        std::cerr << "getDbNames failed" << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+int ConnectionHandle::getCollectionNames(const std::string& db,
+                                         std::list<std::string> *collections)
+{
+    try {
+        *collections = _conn.getCollectionNames(db);
+    } catch (const mongo::DBException &e) {
+        std::cerr << "getCollectionNames "
+                  << " for db "
+                  << db
+                  << " failed"
+                  << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
+
 } // close mongoodbc namespace
 

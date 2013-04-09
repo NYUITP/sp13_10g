@@ -76,7 +76,7 @@ main(int arc, char **argv)
     SQLHSTMT stmtHandle;
     SQLAllocHandle(SQL_HANDLE_STMT, dbHandle, &stmtHandle);
 
-    SQLExecDirect(stmtHandle, (SQLCHAR*)"select * from test", SQL_NTS);
+    SQLTables(stmtHandle, NULL, 0, NULL, 0, NULL, 0, (SQLCHAR*)"TABLE", SQL_NTS);
 
     // free statement handle
     SQLFreeHandle(SQL_HANDLE_STMT, stmtHandle);

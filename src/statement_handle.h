@@ -17,6 +17,12 @@
 #ifndef MONGOODBC_STATEMENT_HANDLE_H_
 #define MONGOODBC_STATEMENT_HANDLE_H_
 
+#include <sql.h>
+#include <sqlext.h>
+
+#include <list>
+#include <string>
+
 namespace mongoodbc {
 
 class ConnectionHandle;
@@ -31,6 +37,11 @@ class StatementHandle {
 
   public:
     StatementHandle(ConnectionHandle *connHandle);
+
+    SQLRETURN getDbs(std::list<std::string> *dbs);
+
+    SQLRETURN getCollections(const std::string& db,
+                             std::list<std::string> *collections);
 };
 
 } // close mongoodbc namespace

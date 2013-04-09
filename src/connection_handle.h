@@ -19,6 +19,9 @@
 
 #include <mongo/client/dbclient.h>
 
+#include <list>
+#include <string>
+
 namespace mongoodbc {
 
 class EnvironmentHandle;
@@ -40,6 +43,11 @@ class ConnectionHandle {
     * @return 0 on success, non-zero otherwise
     */
     int connect();
+
+    int getDbNames(std::list<std::string> *dbs);
+
+    int getCollectionNames(const std::string& db,
+                           std::list<std::string> *collections);
 };
 
 } // close mongoodbc namespace

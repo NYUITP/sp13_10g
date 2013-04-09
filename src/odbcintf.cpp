@@ -21,6 +21,10 @@
 #include <statement_handle.h>
 
 #include <iostream>
+#include <list>
+#include <map>
+#include <string>
+
 #include <assert.h>
 
 SQLRETURN SQL_API
@@ -51,6 +55,8 @@ SQLGetStmtAttr(SQLHSTMT stmtHandle,
 	           SQLINTEGER bufferLength,
                SQLINTEGER *stringLenPtr)
 {
+    std::cout << "SQLGetDiagRec" << std::endl;
+    return SQL_ERROR;
 }
 
 SQLRETURN SQL_API
@@ -196,6 +202,60 @@ SQLTables(SQLHSTMT statementHandle,
 	      SQLCHAR *tableType,
           SQLSMALLINT tableTypeLen)
 {
+    // TODO: Only 'schemaName' and 'tableName' are handled for now
+
+    std::cout << "SQLTables" << std::endl;
+
+    mongoodbc::StatementHandle *stmt =
+        static_cast<mongoodbc::StatementHandle *> (statementHandle);
+
+    if (NULL != tableType) {
+        std::string tableTypeStr;
+        if (tableTypeLen == SQL_NTS) {
+            tableTypeStr.assign((char *)tableType);
+        } else {
+            tableTypeStr.assign((char *)tableType, (int)tableTypeLen);
+        }
+        if ("TABLE" != tableTypeStr && "'TABLE'" != tableTypeStr) {
+            // No other table tyoes are supported
+            return SQL_SUCCESS;
+        }
+    }
+
+    std::list<std::string> schemas;
+    stmt->getDbs(&schemas);
+    if (NULL != schemaName) {
+        std::string schemaNameStr;
+        if (schemaNameLen == SQL_NTS) {
+            schemaNameStr.assign((char *)schemaName);
+        } else {
+            schemaNameStr.assign((char *)schemaName, (int)schemaNameLen);
+        }
+
+        // TODO: filter 'schemas'
+    }
+
+    // map from schema name to table names
+    std::map<std::string, std::list<std::string> > tables;
+    for (std::list<std::string>::const_iterator it = schemas.begin();
+         it != schemas.end();
+         ++it) {
+        std::map<std::string, std::list<std::string> >::iterator tableIt =
+            tables.insert(std::make_pair(*it, std::list<std::string>())).first;
+        stmt->getCollections(tableIt->first, &tableIt->second);
+    }
+    if (NULL != tableName) {
+        std::string tableNameStr;
+        if (tableNameLen == SQL_NTS) {
+            tableNameStr.assign((char *)tableName);
+        } else {
+            tableNameStr.assign((char *)tableName, (int)tableNameLen);
+        }
+
+        //TODO: filter 'tables'
+    }
+
+    return SQL_SUCCESS;
 }
 
 SQLRETURN SQL_API
