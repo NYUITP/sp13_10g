@@ -103,6 +103,14 @@ SQLNumResultCols(SQLHSTMT statementHandle,
 SQLRETURN SQL_API
 SQLFetch(SQLHSTMT statementHandle);
 
+SQLRETURN SQL_API
+SQLGetData(SQLHSTMT statementHandle,
+           SQLUSMALLINT columnNum,
+           SQLSMALLINT type,
+	       SQLPOINTER valuePtr,
+           SQLLEN len,
+           SQLLEN *lenPtr);
+
 }
 
 #endif

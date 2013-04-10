@@ -259,6 +259,25 @@ SQLFetch(SQLHSTMT statementHandle)
     return stmt->sqlFetch();
 }
 
+SQLRETURN SQL_API
+SQLGetData(SQLHSTMT statementHandle,
+           SQLUSMALLINT columnNum,
+           SQLSMALLINT type,
+	       SQLPOINTER valuePtr,
+           SQLLEN len,
+           SQLLEN *lenPtr)
+{
+    mongoodbc::StatementHandle *stmt =
+        static_cast<mongoodbc::StatementHandle *> (statementHandle);
+    
+    return stmt->sqlGetData(columnNum,
+                            type,
+                            valuePtr,
+                            len,
+                            lenPtr);
+}
+
+
 // FUNCTIONS BELOW THIS LINE ARE NOT IMPLEMENTED
 extern "C" {
 SQLRETURN SQL_API
@@ -457,10 +476,6 @@ SQLStatistics(SQLHSTMT stmt, SQLCHAR *cat, SQLSMALLINT catLen,
 	      SQLCHAR *schema, SQLSMALLINT schemaLen,
 	      SQLCHAR *table, SQLSMALLINT tableLen,
 	      SQLUSMALLINT itype, SQLUSMALLINT resv);
-
-SQLRETURN SQL_API
-SQLGetData(SQLHSTMT stmt, SQLUSMALLINT col, SQLSMALLINT type,
-	   SQLPOINTER val, SQLLEN len, SQLLEN *lenp);
 
 SQLRETURN SQL_API
 SQLFetchScroll(SQLHSTMT stmt, SQLSMALLINT orient, SQLLEN offset);
@@ -913,15 +928,6 @@ SQLStatistics(SQLHSTMT stmt, SQLCHAR *cat, SQLSMALLINT catLen,
 {
     assert(0);
     std::cout << "SQLStatistics" << std::endl;
-    return 0;
-}
-
-SQLRETURN SQL_API
-SQLGetData(SQLHSTMT stmt, SQLUSMALLINT col, SQLSMALLINT type,
-	   SQLPOINTER val, SQLLEN len, SQLLEN *lenp)
-{
-    assert(0);
-    std::cout << "SQLGetData" << std::endl;
     return 0;
 }
 

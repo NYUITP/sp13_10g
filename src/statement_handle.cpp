@@ -18,6 +18,10 @@
 #include <statement_handle.h>
 #include <connection_handle.h>
 
+#include <boost/variant/get.hpp>
+
+#include <string.h>
+
 namespace mongoodbc {
 
 StatementHandle::StatementHandle(ConnectionHandle *connHandle)
@@ -125,6 +129,34 @@ SQLRETURN StatementHandle::sqlFetch()
     ++_rowIdx;
     if (_rowIdx >= _resultSet.size()) {
         return SQL_NO_DATA;
+    }
+
+    return SQL_SUCCESS;
+}
+
+SQLRETURN StatementHandle::sqlGetData(SQLUSMALLINT columnNum,
+                     SQLSMALLINT type,
+                     SQLPOINTER valuePtr,
+                     SQLLEN len,
+                     SQLLEN *lenPtr)
+{
+    std::list<Result>::const_iterator it =
+        _resultSet[_rowIdx].begin();
+    for (int i = 1; i < columnNum; ++i) {
+        ++it;
+    }
+
+    switch(type) {
+      case SQL_C_CHAR: {
+        const std::string& str = boost::get<std::string>(*it);
+        int copyLen = (len > (str.size() - 1) ? str.size() : len - 1);
+        strncpy((char *)valuePtr, str.c_str(), copyLen);
+        ((char *)valuePtr)[copyLen] = '\0';
+        *lenPtr = copyLen + 1;
+      } break;
+      default: {
+        return SQL_ERROR;
+      } break;
     }
 
     return SQL_SUCCESS;

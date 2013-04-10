@@ -148,7 +148,14 @@ TEST_F(SQLTablesTest, AllDbs) {
     EXPECT_EQ(5, numCols);
 
     int numResults = 0;
+    char schemaName[256];
+    char columnName[256];
     while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
+        SQLLEN len;
+        SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
+        std::cout << "schemaName: " << schemaName << std::endl;
+        SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)columnName, 256, &len);
+        std::cout << "columnName: " << columnName << std::endl;
         ++numResults;
     }
     EXPECT_EQ(26, numResults);
@@ -167,7 +174,14 @@ TEST_F(SQLTablesTest, AllTablesInDb) {
         EXPECT_EQ(5, numCols);
 
         int numResults = 0;
+        char schemaName[256];
+        char columnName[256];
         while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
+            SQLLEN len;
+            SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
+            std::cout << "schemaName: " << schemaName << std::endl;
+            SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)columnName, 256, &len);
+            std::cout << "columnName: " << columnName << std::endl;
             ++numResults;
         }
         EXPECT_EQ(5, numResults);

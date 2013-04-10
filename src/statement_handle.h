@@ -61,6 +61,12 @@ class StatementHandle {
     SQLRETURN sqlNumResultCols(SQLSMALLINT *numColumns);
 
     SQLRETURN sqlFetch();
+
+    SQLRETURN sqlGetData(SQLUSMALLINT columnNum,
+                         SQLSMALLINT type,
+	                     SQLPOINTER valuePtr,
+                         SQLLEN len,
+                         SQLLEN *lenPtr);
 };
 
 } // close mongoodbc namespace
