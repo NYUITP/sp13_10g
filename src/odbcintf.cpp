@@ -48,6 +48,15 @@ SQLGetEnvAttr(SQLHENV environmentHandle,
     return SQL_SUCCESS;
 }
 
+SQLRETURN SQLSetEnvAttr(SQLHENV environmentHandle,
+                        SQLINTEGER attribute,
+                        SQLPOINTER valuePtr,
+                        SQLINTEGER stringLen)
+{
+    std::cout << "SQLGetEnvAttr" << std::endl;
+    return SQL_SUCCESS;
+}
+
 SQLRETURN SQL_API
 SQLGetStmtAttr(SQLHSTMT stmtHandle,
                SQLINTEGER attribute,
@@ -188,6 +197,8 @@ SQLDriverConnect(SQLHDBC connectionHandle,
         static_cast<mongoodbc::ConnectionHandle *> (connectionHandle);
     conn->connect();
 
+    *outConnectStringLen = 0;
+
     return SQL_SUCCESS;
 }
 
@@ -209,53 +220,15 @@ SQLTables(SQLHSTMT statementHandle,
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
 
-    if (NULL != tableType) {
-        std::string tableTypeStr;
-        if (tableTypeLen == SQL_NTS) {
-            tableTypeStr.assign((char *)tableType);
-        } else {
-            tableTypeStr.assign((char *)tableType, (int)tableTypeLen);
-        }
-        if ("TABLE" != tableTypeStr && "'TABLE'" != tableTypeStr) {
-            // No other table tyoes are supported
-            return SQL_SUCCESS;
-        }
-    }
+    return stmt->sqlTables(catalogName,
+                           catalogNameLen,
+                           schemaName,
+                           schemaNameLen,
+                           tableName,
+                           tableNameLen,
+                           tableType,
+                           tableTypeLen);
 
-    std::list<std::string> schemas;
-    stmt->getDbs(&schemas);
-    if (NULL != schemaName) {
-        std::string schemaNameStr;
-        if (schemaNameLen == SQL_NTS) {
-            schemaNameStr.assign((char *)schemaName);
-        } else {
-            schemaNameStr.assign((char *)schemaName, (int)schemaNameLen);
-        }
-
-        // TODO: filter 'schemas'
-    }
-
-    // map from schema name to table names
-    std::map<std::string, std::list<std::string> > tables;
-    for (std::list<std::string>::const_iterator it = schemas.begin();
-         it != schemas.end();
-         ++it) {
-        std::map<std::string, std::list<std::string> >::iterator tableIt =
-            tables.insert(std::make_pair(*it, std::list<std::string>())).first;
-        stmt->getCollections(tableIt->first, &tableIt->second);
-    }
-    if (NULL != tableName) {
-        std::string tableNameStr;
-        if (tableNameLen == SQL_NTS) {
-            tableNameStr.assign((char *)tableName);
-        } else {
-            tableNameStr.assign((char *)tableName, (int)tableNameLen);
-        }
-
-        //TODO: filter 'tables'
-    }
-
-    return SQL_SUCCESS;
 }
 
 SQLRETURN SQL_API
@@ -267,6 +240,24 @@ SQLExecDirect(SQLHSTMT statementHandle,
     return SQL_SUCCESS;
 }
 
+SQLRETURN SQL_API
+SQLNumResultCols(SQLHSTMT statementHandle,
+                 SQLSMALLINT *numColumns)
+{
+    mongoodbc::StatementHandle *stmt =
+        static_cast<mongoodbc::StatementHandle *> (statementHandle);
+    
+    return stmt->sqlNumResultCols(numColumns);
+}
+
+SQLRETURN SQL_API
+SQLFetch(SQLHSTMT statementHandle)
+{
+    mongoodbc::StatementHandle *stmt =
+        static_cast<mongoodbc::StatementHandle *> (statementHandle);
+    
+    return stmt->sqlFetch();
+}
 
 // FUNCTIONS BELOW THIS LINE ARE NOT IMPLEMENTED
 extern "C" {
@@ -472,13 +463,7 @@ SQLGetData(SQLHSTMT stmt, SQLUSMALLINT col, SQLSMALLINT type,
 	   SQLPOINTER val, SQLLEN len, SQLLEN *lenp);
 
 SQLRETURN SQL_API
-SQLFetch(SQLHSTMT stmt);
-
-SQLRETURN SQL_API
 SQLFetchScroll(SQLHSTMT stmt, SQLSMALLINT orient, SQLLEN offset);
-
-SQLRETURN SQL_API
-SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT *ncols);
 
 SQLRETURN SQL_API
 SQLDescribeCol(SQLHSTMT stmt, SQLUSMALLINT col, SQLCHAR *name,
@@ -941,14 +926,6 @@ SQLGetData(SQLHSTMT stmt, SQLUSMALLINT col, SQLSMALLINT type,
 }
 
 SQLRETURN SQL_API
-SQLFetch(SQLHSTMT stmt)
-{
-    assert(0);
-    std::cout << "SQLFetch" << std::endl;
-    return 0;
-}
-
-SQLRETURN SQL_API
 SQLFetchScroll(SQLHSTMT stmt, SQLSMALLINT orient, SQLLEN offset)
 {
     assert(0);
@@ -961,14 +938,6 @@ SQLRowCount(SQLHSTMT stmt, SQLLEN *nrows)
 {
     assert(0);
     std::cout << "SQLRowCount" << std::endl;
-    return 0;
-}
-
-SQLRETURN SQL_API
-SQLNumResultCols(SQLHSTMT stmt, SQLSMALLINT *ncols)
-{
-    assert(0);
-    std::cout << "SQLNumResultCols" << std::endl;
     return 0;
 }
 

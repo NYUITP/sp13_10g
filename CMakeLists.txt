@@ -59,8 +59,18 @@ boost_thread
 )
 
 # unit tests
+ADD_EXECUTABLE(odbcintf_unittest
+src/odbcintf.t.cpp
+src/odbcintf.h
+)
+
+TARGET_LINK_LIBRARIES(odbcintf_unittest
+mongoodbc
+gtest)
+
 ADD_EXECUTABLE(sql_parser_unittest
 src/sql_parser.t.cpp
+src/sql_parser.h
 )
 
 TARGET_LINK_LIBRARIES(sql_parser_unittest
@@ -69,6 +79,7 @@ gtest)
 
 ADD_EXECUTABLE(sql_element_column_name_unittest
 src/sql_element_column_name.t.cpp
+src/sql_element_column_name.h
 )
 
 TARGET_LINK_LIBRARIES(sql_element_column_name_unittest

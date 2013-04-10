@@ -25,22 +25,106 @@ StatementHandle::StatementHandle(ConnectionHandle *connHandle)
 {
 }
 
-SQLRETURN StatementHandle::getDbs(std::list<std::string> *dbs)
+SQLRETURN StatementHandle::sqlTables(SQLCHAR *catalogName,
+                                     SQLSMALLINT catalogNameLen,
+                                     SQLCHAR *schemaName,
+                                     SQLSMALLINT schemaNameLen,
+                                     SQLCHAR *tableName,
+                                     SQLSMALLINT tableNameLen,
+                                     SQLCHAR *tableType,
+                                     SQLSMALLINT tableTypeLen)
 {
-    int rc = _connHandle->getDbNames(dbs);
+    _resultSet.clear();
+    if (NULL != tableType) {
+        std::string tableTypeStr;
+        if (tableTypeLen == SQL_NTS) {
+            tableTypeStr.assign((char *)tableType);
+        } else {
+            tableTypeStr.assign((char *)tableType, (int)tableTypeLen);
+        }
+        if ("TABLE" != tableTypeStr && "'TABLE'" != tableTypeStr) {
+            // No other table tyoes are supported
+            _rowIdx = -1;
+            return SQL_SUCCESS;
+        }
+    }
+
+    _rowIdx = -1;
+    std::list<std::string> schemas;
+    int rc = _connHandle->getDbNames(&schemas);
     if (0 != rc) {
         return SQL_ERROR;
+    }
+    if (NULL != schemaName) {
+        std::string schemaNameStr;
+        if (schemaNameLen == SQL_NTS) {
+            schemaNameStr.assign((char *)schemaName);
+        } else {
+            schemaNameStr.assign((char *)schemaName, (int)schemaNameLen);
+        }
+
+        // TODO: filter 'schemas'
+    }
+    
+    // map from schema name to table names
+    for (std::list<std::string>::const_iterator it = schemas.begin();
+         it != schemas.end();
+         ++it) {
+        std::list<std::string> tables;
+        int rc = _connHandle->getCollectionNames(*it, &tables);
+        if (0 != rc) {
+            return SQL_ERROR;
+        }
+        for (std::list<std::string>::const_iterator tableIt = tables.begin();
+             tableIt != tables.end();
+             ++tableIt) {
+            size_t periodIdx = tableIt->find('.');
+            size_t periodIdx2 = tableIt->find('.', periodIdx + 1);
+            if (periodIdx2 != std::string::npos) {
+                periodIdx2 = periodIdx2 - periodIdx - 1;
+            }
+            std::string tableName(*tableIt, periodIdx + 1, periodIdx2);
+            if ("system" == tableName) {
+                // skip mongodb internal tables
+                continue;
+            }
+            _resultSet.push_back(std::list<Result>());
+            std::list<Result>& results = _resultSet.back();
+            results.push_back("NULL");
+            results.push_back(*it);
+            results.push_back(tableName);
+            results.push_back("TABLE");
+            results.push_back("NULL");
+        }
+    }
+    if (NULL != tableName) {
+        std::string tableNameStr;
+        if (tableNameLen == SQL_NTS) {
+            tableNameStr.assign((char *)tableName);
+        } else {
+            tableNameStr.assign((char *)tableName, (int)tableNameLen);
+        }
+
+        //TODO: filter 'tables'
     }
 
     return SQL_SUCCESS;
 }
-
-SQLRETURN StatementHandle::getCollections(const std::string& db,
-                                          std::list<std::string> *collections)
+    
+SQLRETURN StatementHandle::sqlNumResultCols(SQLSMALLINT *numColumns)
 {
-    int rc = _connHandle->getCollectionNames(db, collections);
-    if (0 != rc) {
-        return SQL_ERROR;
+    *numColumns = 0;
+    if (_resultSet.size()) {
+        *numColumns = (SQLSMALLINT)_resultSet[0].size();
+    }
+    return SQL_SUCCESS;
+}
+
+SQLRETURN StatementHandle::sqlFetch()
+{
+    ++_rowIdx;
+    if (_rowIdx >= _resultSet.size()) {
+        return SQL_NO_DATA;
     }
 
     return SQL_SUCCESS;

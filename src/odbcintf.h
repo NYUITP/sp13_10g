@@ -30,6 +30,11 @@ SQLGetEnvAttr(SQLHENV environmentHandle,
               SQLINTEGER bufferLength,
               SQLINTEGER *stringLenPtr);
 
+SQLRETURN SQLSetEnvAttr(SQLHENV environmentHandle,
+                        SQLINTEGER attribute,
+                        SQLPOINTER valuePtr,
+                        SQLINTEGER stringLen);
+
 SQLRETURN SQL_API
 SQLGetStmtAttr(SQLHSTMT stmtHandle,
                SQLINTEGER attribute,
@@ -90,6 +95,14 @@ SQLRETURN SQL_API
 SQLExecDirect(SQLHSTMT statementHandle,
               SQLCHAR *query,
               SQLINTEGER queryLen);
+
+SQLRETURN SQL_API
+SQLNumResultCols(SQLHSTMT statementHandle,
+                 SQLSMALLINT *numColumns);
+
+SQLRETURN SQL_API
+SQLFetch(SQLHSTMT statementHandle);
+
 }
 
 #endif
