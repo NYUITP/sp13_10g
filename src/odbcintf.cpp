@@ -166,7 +166,6 @@ SQLFreeHandle(SQLSMALLINT handleType, SQLHANDLE handle)
             static_cast<mongoodbc::StatementHandle *> (handle);
         delete stmt;
         std::cout << "Successfully freed statement handle" << std::endl;
-        return SQL_ERROR;
     }
     else if (SQL_HANDLE_DESC == handleType) {
         return SQL_ERROR;

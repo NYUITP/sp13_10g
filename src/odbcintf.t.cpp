@@ -44,20 +44,25 @@ class ODBCIntfTest : public ::testing::Test {
 
         ASSERT_NO_THROW(_conn.connect("localhost"));
 
+        SQLRETURN ret;
         // allocate environment handle
-        SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_endHandle);
+        ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_endHandle);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         // ask for ODBC 3.0
-        SQLSetEnvAttr(_endHandle, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
+        ret = SQLSetEnvAttr(_endHandle, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         // allocate a connection handle
-        SQLAllocHandle(SQL_HANDLE_DBC, _endHandle, &_dbHandle);
+        ret = SQLAllocHandle(SQL_HANDLE_DBC, _endHandle, &_dbHandle);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         SQLCHAR outstr[1024];
         SQLSMALLINT outstrlen;
         SQLCHAR *dsn = (SQLCHAR *)"DSN=MongoDB";
         // connect to the mongodb driver
-        SQLRETURN ret = SQLDriverConnect(_dbHandle, NULL, dsn ,SQL_NTS, outstr, sizeof(outstr), &outstrlen, SQL_DRIVER_COMPLETE);
+        ret = SQLDriverConnect(_dbHandle, NULL, dsn ,SQL_NTS, outstr, sizeof(outstr), &outstrlen, SQL_DRIVER_COMPLETE);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         if (SQL_SUCCEEDED(ret)) {
             std::cout << "Successfully connected - returned connection string: "
@@ -65,23 +70,25 @@ class ODBCIntfTest : public ::testing::Test {
                       << std::endl;
         }
 
-        SQLAllocHandle(SQL_HANDLE_STMT, _dbHandle, &_stmtHandle);
+        ret = SQLAllocHandle(SQL_HANDLE_STMT, _dbHandle, &_stmtHandle);
+        ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
     }
 
     virtual void TearDown()
     {
+        SQLRETURN ret;
         // free statement handle
-        SQLFreeHandle(SQL_HANDLE_STMT, _stmtHandle);
+        ret = SQLFreeHandle(SQL_HANDLE_STMT, _stmtHandle);
+        EXPECT_TRUE(SQL_SUCCEEDED(ret));
 
         // free connection handle
-        SQLFreeHandle(SQL_HANDLE_DBC, _dbHandle);
+        ret = SQLFreeHandle(SQL_HANDLE_DBC, _dbHandle);
+        EXPECT_TRUE(SQL_SUCCEEDED(ret));
 
         // free environment handle
-        SQLFreeHandle(SQL_HANDLE_ENV, _endHandle);
-
-        // Drop Test database
-        ASSERT_NO_THROW(_conn.dropDatabase(_dbName));
+        ret = SQLFreeHandle(SQL_HANDLE_ENV, _endHandle);
+        EXPECT_TRUE(SQL_SUCCEEDED(ret));
     }
     
     std::string _dbName;
@@ -158,7 +165,6 @@ TEST_F(SQLTablesTest, AllDbs) {
     while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
         SQLLEN len;
         SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
-        std::cout << "schemaName: " << schemaName << std::endl;
         std::map<std::string, std::set<std::string> >::const_iterator schemaIt =
             _dbs.find(schemaName);
         EXPECT_NE(_dbs.end(), schemaIt);
@@ -166,7 +172,6 @@ TEST_F(SQLTablesTest, AllDbs) {
             continue;
         }
         SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
-        std::cout << "tableName: " << tableName << std::endl;
         std::set<std::string>::const_iterator tableIt = schemaIt->second.find(tableName);
         EXPECT_NE(schemaIt->second.end(), tableIt);
         ++numResults;
@@ -194,7 +199,6 @@ TEST_F(SQLTablesTest, AllTablesInDb) {
         while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
             SQLLEN len;
             SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
-            std::cout << "schemaName: " << schemaName << std::endl;
             std::map<std::string, std::set<std::string> >::const_iterator schemaIt =
                 _dbs.find(schemaName);
             EXPECT_NE(_dbs.end(), schemaIt);
@@ -202,7 +206,6 @@ TEST_F(SQLTablesTest, AllTablesInDb) {
                 continue;
             }
             SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
-            std::cout << "tableName: " << tableName << std::endl;
             std::set<std::string>::const_iterator tableIt = schemaIt->second.find(tableName);
             EXPECT_NE(schemaIt->second.end(), tableIt);
             ++numResults;
