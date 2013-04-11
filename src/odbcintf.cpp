@@ -244,6 +244,7 @@ SQLRETURN SQL_API
 SQLNumResultCols(SQLHSTMT statementHandle,
                  SQLSMALLINT *numColumns)
 {
+    std::cout << "SQLNumResultCols" << std::endl;
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
     
@@ -253,6 +254,7 @@ SQLNumResultCols(SQLHSTMT statementHandle,
 SQLRETURN SQL_API
 SQLFetch(SQLHSTMT statementHandle)
 {
+    std::cout << "SQLFetch" << std::endl;
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
     
@@ -267,6 +269,7 @@ SQLGetData(SQLHSTMT statementHandle,
            SQLLEN len,
            SQLLEN *lenPtr)
 {
+    std::cout << "SQLGetData" << std::endl;
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
     

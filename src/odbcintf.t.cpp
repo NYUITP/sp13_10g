@@ -44,8 +44,6 @@ class ODBCIntfTest : public ::testing::Test {
 
         ASSERT_NO_THROW(_conn.connect("localhost"));
 
-        ASSERT_NO_THROW(_conn.createCollection(_dbName + ".testcollection"));
-
         // allocate environment handle
         SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_endHandle);
 
@@ -110,28 +108,35 @@ class SQLTablesTest : public ODBCIntfTest {
             dbNameStream << _dbName
                          << "db"
                          << i;
-            _dbs.push_back(dbNameStream.str());
+            std::map<std::string, std::set<std::string> >::iterator it =
+                _dbs.insert(std::make_pair(dbNameStream.str(), std::set<std::string>())).first;
+            std::set<std::string>& collections = it->second;
             for (int j = 0; j < NUM_COLLECTIONS_PER_DB; ++j) {
                 std::stringstream collectionNameStream;
                 collectionNameStream << "collection"
+                                     << i
                                      << j;
-                _collections.push_back(collectionNameStream.str());
-                ASSERT_NO_THROW(_conn.createCollection(_dbs.back() + '.' + _collections.back()));
+                collections.insert(collectionNameStream.str());
+                ASSERT_NO_THROW(_conn.createCollection(
+                                    dbNameStream.str() +
+                                    '.' +
+                                    collectionNameStream.str()));
             }
         }
     }
 
     virtual void TearDown()
     {
-        for (int i = 0; i < NUM_DBS; ++i) {
-            ASSERT_NO_THROW(_conn.dropDatabase(_dbs[i]));
+        for (std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+             it != _dbs.end();
+             ++it) {
+            ASSERT_NO_THROW(_conn.dropDatabase(it->first));
         }
 
         ODBCIntfTest::TearDown();
     }
 
-    std::vector<std::string> _dbs;
-    std::vector<std::string> _collections;
+    std::map<std::string, std::set<std::string> > _dbs;
 };
 
 TEST_F(SQLTablesTest, Breathing) {
@@ -149,21 +154,31 @@ TEST_F(SQLTablesTest, AllDbs) {
 
     int numResults = 0;
     char schemaName[256];
-    char columnName[256];
+    char tableName[256];
     while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
         SQLLEN len;
         SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
         std::cout << "schemaName: " << schemaName << std::endl;
-        SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)columnName, 256, &len);
-        std::cout << "columnName: " << columnName << std::endl;
+        std::map<std::string, std::set<std::string> >::const_iterator schemaIt =
+            _dbs.find(schemaName);
+        EXPECT_NE(_dbs.end(), schemaIt);
+        if (_dbs.end() == schemaIt) {
+            continue;
+        }
+        SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
+        std::cout << "tableName: " << tableName << std::endl;
+        std::set<std::string>::const_iterator tableIt = schemaIt->second.find(tableName);
+        EXPECT_NE(schemaIt->second.end(), tableIt);
         ++numResults;
     }
-    EXPECT_EQ(26, numResults);
+    EXPECT_EQ(25, numResults);
 }
 
 TEST_F(SQLTablesTest, AllTablesInDb) {
-    for (size_t i = 0; i < _dbs.size(); ++i) {
-        const std::string& dbName = _dbs[i];
+    for (std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+         it != _dbs.end();
+         ++it) {
+        const std::string& dbName = it->first;
         SQLRETURN ret =
             SQLTables(_stmtHandle, NULL, 0, (SQLCHAR*)dbName.c_str(), SQL_NTS, NULL, 0, (SQLCHAR*)"TABLE", SQL_NTS);
         ASSERT_TRUE(SQL_SUCCEEDED(ret));
@@ -175,13 +190,21 @@ TEST_F(SQLTablesTest, AllTablesInDb) {
 
         int numResults = 0;
         char schemaName[256];
-        char columnName[256];
+        char tableName[256];
         while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
             SQLLEN len;
             SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
             std::cout << "schemaName: " << schemaName << std::endl;
-            SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)columnName, 256, &len);
-            std::cout << "columnName: " << columnName << std::endl;
+            std::map<std::string, std::set<std::string> >::const_iterator schemaIt =
+                _dbs.find(schemaName);
+            EXPECT_NE(_dbs.end(), schemaIt);
+            if (_dbs.end() == schemaIt) {
+                continue;
+            }
+            SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
+            std::cout << "tableName: " << tableName << std::endl;
+            std::set<std::string>::const_iterator tableIt = schemaIt->second.find(tableName);
+            EXPECT_NE(schemaIt->second.end(), tableIt);
             ++numResults;
         }
         EXPECT_EQ(5, numResults);

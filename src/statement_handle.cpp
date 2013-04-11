@@ -39,6 +39,7 @@ SQLRETURN StatementHandle::sqlTables(SQLCHAR *catalogName,
                                      SQLSMALLINT tableTypeLen)
 {
     _resultSet.clear();
+    _rowIdx = -1;
     if (NULL != tableType) {
         std::string tableTypeStr;
         if (tableTypeLen == SQL_NTS) {
@@ -48,12 +49,10 @@ SQLRETURN StatementHandle::sqlTables(SQLCHAR *catalogName,
         }
         if ("TABLE" != tableTypeStr && "'TABLE'" != tableTypeStr) {
             // No other table tyoes are supported
-            _rowIdx = -1;
             return SQL_SUCCESS;
         }
     }
 
-    _rowIdx = -1;
     std::list<std::string> schemas;
     int rc = _connHandle->getDbNames(&schemas);
     if (0 != rc) {
@@ -118,9 +117,10 @@ SQLRETURN StatementHandle::sqlTables(SQLCHAR *catalogName,
 SQLRETURN StatementHandle::sqlNumResultCols(SQLSMALLINT *numColumns)
 {
     *numColumns = 0;
-    if (_resultSet.size()) {
-        *numColumns = (SQLSMALLINT)_resultSet[0].size();
+    if (0 == _resultSet.size()) {
+        return SQL_ERROR;
     }
+    *numColumns = (SQLSMALLINT)_resultSet[0].size();
     return SQL_SUCCESS;
 }
 
