@@ -156,7 +156,7 @@ TEST_F(SQLTablesTest, AllDbs) {
 
     SQLSMALLINT numCols;
     ret = SQLNumResultCols(_stmtHandle, &numCols);
-    ASSERT_TRUE(SQL_SUCCEEDED(ret));
+    EXPECT_TRUE(SQL_SUCCEEDED(ret));
     EXPECT_EQ(5, numCols);
 
     int numResults = 0;
@@ -164,14 +164,16 @@ TEST_F(SQLTablesTest, AllDbs) {
     char tableName[256];
     while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
         SQLLEN len;
-        SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
+        ret = SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
+        EXPECT_TRUE(SQL_SUCCEEDED(ret));
         std::map<std::string, std::set<std::string> >::const_iterator schemaIt =
             _dbs.find(schemaName);
         EXPECT_NE(_dbs.end(), schemaIt);
         if (_dbs.end() == schemaIt) {
             continue;
         }
-        SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
+        ret = SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
+        EXPECT_TRUE(SQL_SUCCEEDED(ret));
         std::set<std::string>::const_iterator tableIt = schemaIt->second.find(tableName);
         EXPECT_NE(schemaIt->second.end(), tableIt);
         ++numResults;
@@ -185,12 +187,20 @@ TEST_F(SQLTablesTest, AllTablesInDb) {
          ++it) {
         const std::string& dbName = it->first;
         SQLRETURN ret =
-            SQLTables(_stmtHandle, NULL, 0, (SQLCHAR*)dbName.c_str(), SQL_NTS, NULL, 0, (SQLCHAR*)"TABLE", SQL_NTS);
+            SQLTables(_stmtHandle,
+                      NULL,
+                      0,
+                      (SQLCHAR*)dbName.c_str(),
+                      SQL_NTS,
+                      NULL,
+                      0,
+                      (SQLCHAR*)"TABLE",
+                      SQL_NTS);
         ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         SQLSMALLINT numCols;
         ret = SQLNumResultCols(_stmtHandle, &numCols);
-        ASSERT_TRUE(SQL_SUCCEEDED(ret));
+        EXPECT_TRUE(SQL_SUCCEEDED(ret));
         EXPECT_EQ(5, numCols);
 
         int numResults = 0;
@@ -198,14 +208,16 @@ TEST_F(SQLTablesTest, AllTablesInDb) {
         char tableName[256];
         while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
             SQLLEN len;
-            SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
+            ret = SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
+            EXPECT_TRUE(SQL_SUCCEEDED(ret));
             std::map<std::string, std::set<std::string> >::const_iterator schemaIt =
                 _dbs.find(schemaName);
             EXPECT_NE(_dbs.end(), schemaIt);
             if (_dbs.end() == schemaIt) {
                 continue;
             }
-            SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
+            ret = SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
+            EXPECT_TRUE(SQL_SUCCEEDED(ret));
             std::set<std::string>::const_iterator tableIt = schemaIt->second.find(tableName);
             EXPECT_NE(schemaIt->second.end(), tableIt);
             ++numResults;

@@ -236,7 +236,7 @@ SQLExecDirect(SQLHSTMT statementHandle,
               SQLINTEGER queryLen)
 {
     std::cout << "SQLExecDirect" << std::endl;
-    return SQL_SUCCESS;
+    return SQL_ERROR;
 }
 
 SQLRETURN SQL_API
