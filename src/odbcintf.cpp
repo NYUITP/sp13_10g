@@ -34,7 +34,6 @@ SQLGetEnvAttr(SQLHENV environmentHandle,
               SQLINTEGER bufferLength,
               SQLINTEGER *stringLenPtr)
 {
-    std::cout << "SQLGetEnvAttr" << std::endl;
     mongoodbc::EnvironmentHandle *env =
         static_cast<mongoodbc::EnvironmentHandle *> (environmentHandle);
     switch(attribute) {
@@ -53,7 +52,6 @@ SQLRETURN SQLSetEnvAttr(SQLHENV environmentHandle,
                         SQLPOINTER valuePtr,
                         SQLINTEGER stringLen)
 {
-    std::cout << "SQLGetEnvAttr" << std::endl;
     return SQL_SUCCESS;
 }
 
@@ -64,7 +62,6 @@ SQLGetStmtAttr(SQLHSTMT stmtHandle,
 	           SQLINTEGER bufferLength,
                SQLINTEGER *stringLenPtr)
 {
-    std::cout << "SQLGetDiagRec" << std::endl;
     return SQL_ERROR;
 }
 
@@ -78,7 +75,6 @@ SQLGetDiagRec(SQLSMALLINT handleType,
 	          SQLSMALLINT buflen,
               SQLSMALLINT *msglen)
 {
-    std::cout << "SQLGetDiagRec" << std::endl;
     return SQL_NO_DATA;
 }
 
@@ -89,14 +85,12 @@ SQLGetInfo(SQLHDBC connHandle,
            SQLSMALLINT buflen,
            SQLSMALLINT *msglen)
 {
-    std::cout << "SQLGetInfo" << std::endl;
     return SQL_ERROR;
 }
 
 SQLRETURN SQL_API
 SQLDisconnect(SQLHDBC dbc)
 {
-    std::cout << "SQLDisconnect" << std::endl;
     return SQL_SUCCESS;
 }
 
@@ -107,11 +101,9 @@ SQLAllocHandle(SQLSMALLINT handleType,
 // 'handleType' is the handle handleType, SQL_HANDLE_DBC for connection
 // 'input' is the environment handle
 {
-    std::cout << "SQLAllocHandle" << std::endl;
     if (SQL_HANDLE_ENV == handleType) {
         mongoodbc::EnvironmentHandle *env =
             new mongoodbc::EnvironmentHandle();
-        std::cout << "Successfully allocated environemtn handle" << std::endl;
         *outputHandle = static_cast<SQLHANDLE> (env);
     }
     else if (SQL_HANDLE_DBC == handleType) {
@@ -119,7 +111,6 @@ SQLAllocHandle(SQLSMALLINT handleType,
             static_cast<mongoodbc::EnvironmentHandle *> (inputHandle);
         mongoodbc::ConnectionHandle *conn =
             new mongoodbc::ConnectionHandle(env);
-        std::cout << "Successfully allocated connection handle" << std::endl;
         *outputHandle = static_cast<SQLHANDLE> (conn);
     }
     else if (SQL_HANDLE_STMT == handleType) {
@@ -127,7 +118,6 @@ SQLAllocHandle(SQLSMALLINT handleType,
             static_cast<mongoodbc::ConnectionHandle *> (inputHandle);
         mongoodbc::StatementHandle *stmt =
             new mongoodbc::StatementHandle(conn);
-        std::cout << "Successfully allocated statement handle" << std::endl;
         *outputHandle = static_cast<SQLHANDLE> (stmt);
     }
     else if (SQL_HANDLE_DESC == handleType) {
@@ -145,25 +135,21 @@ SQLAllocHandle(SQLSMALLINT handleType,
 SQLRETURN SQL_API
 SQLFreeHandle(SQLSMALLINT handleType, SQLHANDLE handle)
 {
-    std::cout << "SQLFreeHandle" << std::endl;
 
     if (SQL_HANDLE_ENV == handleType) {
         mongoodbc::EnvironmentHandle *env =
             static_cast<mongoodbc::EnvironmentHandle *> (handle);
             delete env;
-            std::cout << "Successfully freed environemnt handle" << std::endl;
     }
     else if (SQL_HANDLE_DBC == handleType) {
         mongoodbc::ConnectionHandle *conn =
             static_cast<mongoodbc::ConnectionHandle *> (handle);
         delete conn;
-        std::cout << "Successfully freed connection handle" << std::endl;
     }
     else if (SQL_HANDLE_STMT == handleType) {
         mongoodbc::StatementHandle *stmt =
             static_cast<mongoodbc::StatementHandle *> (handle);
         delete stmt;
-        std::cout << "Successfully freed statement handle" << std::endl;
     }
     else if (SQL_HANDLE_DESC == handleType) {
         return SQL_ERROR;
@@ -188,7 +174,6 @@ SQLDriverConnect(SQLHDBC connectionHandle,
 		         SQLSMALLINT *outConnectStringLen,
                  SQLUSMALLINT driverCompletion)
 {
-    std::cout << "SQLDriverConnect" << std::endl;
 
     mongoodbc::ConnectionHandle *conn =
         static_cast<mongoodbc::ConnectionHandle *> (connectionHandle);
@@ -212,7 +197,6 @@ SQLTables(SQLHSTMT statementHandle,
 {
     // TODO: Only 'schemaName' and 'tableName' are handled for now
 
-    std::cout << "SQLTables" << std::endl;
 
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
@@ -238,7 +222,6 @@ SQLColumns(SQLHSTMT statementHandle,
 	       SQLCHAR *columnName,
            SQLSMALLINT columnNameLen)
 {
-    std::cout << "SQLColumns" << std::endl;
 
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
@@ -258,7 +241,6 @@ SQLExecDirect(SQLHSTMT statementHandle,
               SQLCHAR *query,
               SQLINTEGER queryLen)
 {
-    std::cout << "SQLExecDirect" << std::endl;
     return SQL_ERROR;
 }
 
@@ -266,7 +248,6 @@ SQLRETURN SQL_API
 SQLNumResultCols(SQLHSTMT statementHandle,
                  SQLSMALLINT *numColumns)
 {
-    std::cout << "SQLNumResultCols" << std::endl;
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
     
@@ -276,7 +257,6 @@ SQLNumResultCols(SQLHSTMT statementHandle,
 SQLRETURN SQL_API
 SQLFetch(SQLHSTMT statementHandle)
 {
-    std::cout << "SQLFetch" << std::endl;
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
     
@@ -291,7 +271,6 @@ SQLGetData(SQLHSTMT statementHandle,
            SQLLEN len,
            SQLLEN *lenPtr)
 {
-    std::cout << "SQLGetData" << std::endl;
     mongoodbc::StatementHandle *stmt =
         static_cast<mongoodbc::StatementHandle *> (statementHandle);
     

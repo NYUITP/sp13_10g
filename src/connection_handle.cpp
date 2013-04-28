@@ -28,7 +28,6 @@ int ConnectionHandle::connect()
 {
     try {
         _conn.connect("localhost");
-        std::cerr << "Connection to mongoDB successful" << std::endl;
     } catch (const mongo::DBException &e) {
         std::cerr << "Connection to mongoDB failed" << std::endl;
         return -1;

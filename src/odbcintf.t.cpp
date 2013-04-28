@@ -64,12 +64,6 @@ class ODBCIntfTest : public ::testing::Test {
         ret = SQLDriverConnect(_dbHandle, NULL, dsn ,SQL_NTS, outstr, sizeof(outstr), &outstrlen, SQL_DRIVER_COMPLETE);
         ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
-        if (SQL_SUCCEEDED(ret)) {
-            std::cout << "Successfully connected - returned connection string: "
-                      << (outstrlen > 0 ? outstr : (SQLCHAR *)"")
-                      << std::endl;
-        }
-
         ret = SQLAllocHandle(SQL_HANDLE_STMT, _dbHandle, &_stmtHandle);
         ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
@@ -226,6 +220,57 @@ TEST_F(SQLTablesTest, AllTablesInDb)
             ++numResults;
         }
         EXPECT_EQ(5, numResults);
+    }
+}
+
+TEST_F(SQLTablesTest, FilterSingleTable)
+{
+    std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+    for (; it != _dbs.end(); ++it) {
+        std::set<std::string>::const_iterator colIt = it->second.begin();
+        for (; colIt != it->second.end(); ++colIt) {
+            std::stringstream collectionNameStream;
+            collectionNameStream << it->first
+                                 << '.'
+                                 << *colIt;
+            SQLRETURN ret =
+                SQLTables(_stmtHandle,
+                          NULL,
+                          0,
+                          (SQLCHAR*)it->first.c_str(),
+                          SQL_NTS,
+                          (SQLCHAR*)colIt->c_str(),
+                          SQL_NTS,
+                          (SQLCHAR*)"TABLE",
+                          SQL_NTS);
+            ASSERT_TRUE(SQL_SUCCEEDED(ret));
+
+            SQLSMALLINT numCols;
+            ret = SQLNumResultCols(_stmtHandle, &numCols);
+            EXPECT_TRUE(SQL_SUCCEEDED(ret));
+            EXPECT_EQ(5, numCols);
+
+            int numResults = 0;
+            char schemaName[256];
+            char tableName[256];
+            while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
+                SQLLEN len;
+                ret = SQLGetData(_stmtHandle, 2, SQL_C_CHAR, (SQLPOINTER)schemaName, 256, &len);
+                EXPECT_TRUE(SQL_SUCCEEDED(ret));
+                std::map<std::string, std::set<std::string> >::const_iterator schemaIt =
+                    _dbs.find(schemaName);
+                EXPECT_NE(_dbs.end(), schemaIt);
+                if (_dbs.end() == schemaIt) {
+                    continue;
+                }
+                ret = SQLGetData(_stmtHandle, 3, SQL_C_CHAR, (SQLPOINTER)tableName, 256, &len);
+                EXPECT_TRUE(SQL_SUCCEEDED(ret));
+                std::set<std::string>::const_iterator tableIt = schemaIt->second.find(tableName);
+                EXPECT_NE(schemaIt->second.end(), tableIt);
+                ++numResults;
+            }
+            EXPECT_EQ(1, numResults);
+        }
     }
 }
 
