@@ -66,5 +66,23 @@ int ConnectionHandle::getCollectionNames(const std::string& db,
     return 0;
 }
 
+std::auto_ptr<mongo::DBClientCursor> ConnectionHandle::query(
+    const std::string& collection,
+    mongo::Query query,
+    int numToReturn,
+    int numToSkip,
+    const mongo::BSONObj *fieldsToReturn,
+    int queryOptions,
+    int batchSize)
+{
+    return _conn.query(collection,
+                       query,
+                       numToReturn,
+                       numToSkip,
+                       fieldsToReturn,
+                       queryOptions,
+                       batchSize);
+}
+
 } // close mongoodbc namespace
 

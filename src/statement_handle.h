@@ -20,6 +20,9 @@
 #include <sql.h>
 #include <sqlext.h>
 
+#include <mongo/client/dbclient.h>
+#include <mongo/bson/bsonobj.h>
+
 #include <boost/variant/variant.hpp>
 
 #include <list>
@@ -36,15 +39,27 @@ class ConnectionHandle;
 class StatementHandle {
     // TYPES
     // Result type for an column entry
-    typedef boost::variant<std::string> Result;
+    typedef boost::variant<std::string, SQLSMALLINT, SQLINTEGER> Result;
 
     // INSTANCE DATA
     // The connection handle from which this handle was created,
     // held, not owned
     ConnectionHandle *_connHandle;
 
+    // '_resultSet' is used to store results for operations that do not retrieve data by
+    // mongoDB cursor (i.e. SQLTables, SQLColumns).
     std::vector<std::list<Result> > _resultSet;
     int _rowIdx;
+
+    SQLSMALLINT mapMongoToODBCDataType(mongo::BSONType type);
+    const char *dataTypeName(SQLSMALLINT type);
+    SQLINTEGER columnSize(SQLSMALLINT type);
+    SQLINTEGER bufferLength(SQLSMALLINT type);
+    SQLSMALLINT decimalDigits(SQLSMALLINT type);
+    SQLSMALLINT numPercRadix(SQLSMALLINT type);
+    SQLSMALLINT mapODBCDataTypeToSQLDataType(SQLSMALLINT type);
+    SQLSMALLINT getDatetimeSubcode(SQLSMALLINT type);
+    SQLINTEGER maxCharLen(SQLSMALLINT type);
 
   public:
     StatementHandle(ConnectionHandle *connHandle);
@@ -57,6 +72,15 @@ class StatementHandle {
                         SQLSMALLINT tableNameLen,
                         SQLCHAR *tableType,
                         SQLSMALLINT tableTypeLen);
+
+    SQLRETURN sqlColumns(SQLCHAR *catalogName,
+                         SQLSMALLINT catalogNameLen,
+                         SQLCHAR *schemaName,
+                         SQLSMALLINT schemaNameLen,
+                         SQLCHAR *tableName,
+                         SQLSMALLINT tableNameLen,
+                         SQLCHAR *columnName,
+                         SQLSMALLINT columnNameLen);
 
     SQLRETURN sqlNumResultCols(SQLSMALLINT *numColumns);
 

@@ -92,6 +92,17 @@ SQLTables(SQLHSTMT statementHandle,
           SQLSMALLINT tableTypeLen);
 
 SQLRETURN SQL_API
+SQLColumns(SQLHSTMT statementHandle,
+	       SQLCHAR *catalogName,
+           SQLSMALLINT catalogNameLen,
+	       SQLCHAR *schemaName,
+           SQLSMALLINT schemaNameLen,
+	       SQLCHAR *tableName,
+           SQLSMALLINT tableNameLen,
+	       SQLCHAR *columnName,
+           SQLSMALLINT columnNameLen);
+
+SQLRETURN SQL_API
 SQLExecDirect(SQLHSTMT statementHandle,
               SQLCHAR *query,
               SQLINTEGER queryLen);

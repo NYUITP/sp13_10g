@@ -18,6 +18,7 @@
 #define MONGOODBC_CONNECTION_HANDLE_H_
 
 #include <mongo/client/dbclient.h>
+#include <mongo/bson/bsonobj.h>
 
 #include <list>
 #include <string>
@@ -48,6 +49,14 @@ class ConnectionHandle {
 
     int getCollectionNames(const std::string& db,
                            std::list<std::string> *collections);
+
+    std::auto_ptr<mongo::DBClientCursor> query(const std::string& collection,
+                                               mongo::Query query = mongo::Query(),
+                                               int numToReturn = 0,
+                                               int numToSkip = 0,
+                                               const mongo::BSONObj *fieldsToReturn = 0,
+                                               int queryOptions = 0,
+                                               int batchSize = 0);
 };
 
 } // close mongoodbc namespace

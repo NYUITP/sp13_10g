@@ -105,8 +105,6 @@ SQLAllocHandle(SQLSMALLINT handleType,
                SQLHANDLE inputHandle,
                SQLHANDLE *outputHandle)
 // 'handleType' is the handle handleType, SQL_HANDLE_DBC for connection
-// TODO: SQL_HANDLE_STMT
-// TODO: SQL_HANDLE_DESC
 // 'input' is the environment handle
 {
     std::cout << "SQLAllocHandle" << std::endl;
@@ -227,7 +225,32 @@ SQLTables(SQLHSTMT statementHandle,
                            tableNameLen,
                            tableType,
                            tableTypeLen);
+}
 
+SQLRETURN SQL_API
+SQLColumns(SQLHSTMT statementHandle,
+	       SQLCHAR *catalogName,
+           SQLSMALLINT catalogNameLen,
+	       SQLCHAR *schemaName,
+           SQLSMALLINT schemaNameLen,
+	       SQLCHAR *tableName,
+           SQLSMALLINT tableNameLen,
+	       SQLCHAR *columnName,
+           SQLSMALLINT columnNameLen)
+{
+    std::cout << "SQLColumns" << std::endl;
+
+    mongoodbc::StatementHandle *stmt =
+        static_cast<mongoodbc::StatementHandle *> (statementHandle);
+
+    return stmt->sqlColumns(catalogName,
+                            catalogNameLen,
+                            schemaName,
+                            schemaNameLen,
+                            tableName,
+                            tableNameLen,
+                            columnName,
+                            columnNameLen);
 }
 
 SQLRETURN SQL_API
@@ -462,13 +485,6 @@ SQLCloseCursor(SQLHSTMT stmt);
 SQLRETURN SQL_API
 SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT col, SQLSMALLINT type,
 	   SQLPOINTER val, SQLLEN max, SQLLEN *lenp);
-
-SQLRETURN SQL_API
-SQLColumns(SQLHSTMT stmt,
-	   SQLCHAR *cat, SQLSMALLINT catLen,
-	   SQLCHAR *schema, SQLSMALLINT schemaLen,
-	   SQLCHAR *table, SQLSMALLINT tableLen,
-	   SQLCHAR *col, SQLSMALLINT colLen);
 
 SQLRETURN SQL_API
 SQLGetTypeInfo(SQLHSTMT stmt, SQLSMALLINT sqltype);
@@ -899,18 +915,6 @@ SQLBindCol(SQLHSTMT stmt, SQLUSMALLINT col, SQLSMALLINT type,
 {
     assert(0);
     std::cout << "SQLBindCol" << std::endl;
-    return 0;
-}
-
-SQLRETURN SQL_API
-SQLColumns(SQLHSTMT stmt,
-	   SQLCHAR *cat, SQLSMALLINT catLen,
-	   SQLCHAR *schema, SQLSMALLINT schemaLen,
-	   SQLCHAR *table, SQLSMALLINT tableLen,
-	   SQLCHAR *col, SQLSMALLINT colLen)
-{
-    assert(0);
-    std::cout << "SQLColumns" << std::endl;
     return 0;
 }
 

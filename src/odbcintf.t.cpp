@@ -146,11 +146,13 @@ class SQLTablesTest : public ODBCIntfTest {
     std::map<std::string, std::set<std::string> > _dbs;
 };
 
-TEST_F(SQLTablesTest, Breathing) {
+TEST_F(SQLTablesTest, Breathing)
+{
     SQLTables(_stmtHandle, NULL, 0, NULL, 0, NULL, 0, (SQLCHAR*)"TABLE", SQL_NTS);
 }
 
-TEST_F(SQLTablesTest, AllDbs) {
+TEST_F(SQLTablesTest, AllDbs)
+{
     SQLRETURN ret = SQLTables(_stmtHandle, NULL, 0, NULL, 0, NULL, 0, (SQLCHAR*)"TABLE", SQL_NTS);
     ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
@@ -181,7 +183,8 @@ TEST_F(SQLTablesTest, AllDbs) {
     EXPECT_EQ(25, numResults);
 }
 
-TEST_F(SQLTablesTest, AllTablesInDb) {
+TEST_F(SQLTablesTest, AllTablesInDb)
+{
     for (std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
          it != _dbs.end();
          ++it) {
@@ -223,6 +226,56 @@ TEST_F(SQLTablesTest, AllTablesInDb) {
             ++numResults;
         }
         EXPECT_EQ(5, numResults);
+    }
+}
+
+class SQLColumnsTest : public SQLTablesTest {
+  protected:
+    virtual void SetUp()
+    {
+        SQLTablesTest::SetUp();
+
+        std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+        for (; it != _dbs.end(); ++it) {
+            std::set<std::string>::const_iterator colIt = it->second.begin();
+            for (; colIt != it->second.end(); ++colIt) {
+                std::stringstream collectionNameStream;
+                collectionNameStream << it->first
+                                     << '.'
+                                     << *colIt;
+                mongo::BSONObjBuilder builder;
+                builder.append("a", 1);
+                builder.append("b", 2);
+            }
+        }
+    }
+
+    virtual void TearDown()
+    {
+        SQLTablesTest::TearDown();
+    }
+};
+
+TEST_F(SQLColumnsTest, Breathing)
+{
+    std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+    for (; it != _dbs.end(); ++it) {
+        std::set<std::string>::const_iterator colIt = it->second.begin();
+        for (; colIt != it->second.end(); ++colIt) {
+            std::stringstream collectionNameStream;
+            collectionNameStream << it->first
+                                 << '.'
+                                 << *colIt;
+            SQLColumns(_stmtHandle,
+                       NULL,
+                       0,
+                       (SQLCHAR*)it->first.c_str(),
+                       SQL_NTS,
+                       (SQLCHAR*)colIt->c_str(),
+                       SQL_NTS,
+                       NULL,
+                       0);
+        }
     }
 }
 
