@@ -73,7 +73,7 @@ template <typename It, typename Skipper = qi::space_type>
 		using qi::alnum;
 		using qi::string;
 		using qi::no_case;
-		
+
 
 
         sqlident = lexeme [ alpha >> *alnum ]; // table or column name
@@ -81,15 +81,22 @@ template <typename It, typename Skipper = qi::space_type>
         tables   = no_case [ "from" ]   >> (sqlident % ',');
         //whr		 = no_case [ "where" ] >> (some_column);
 
-		comparison_op =
-		string(lt) | string(gt) | string(lte) | string(gte) | string(et) | string(net) | string(like) | string(between);
+		//These operators are required to be specified in this order only.
+		comparison_op =  string (net)
+				| string (lte)
+				| string (lt)
+				| string (et)
+				| string (gte)
+				| string (gt)
+				;
+
 
 		//boost::spirit::qi::string(">") | boost::spirit::qi::string("<") | boost::spirit::qi::string("<=");// | lit (">=") | lit ("=") | lit ("<>");
 
 		boolean_literal %=
 			no_case ["TRUE"] | no_case ["FALSE"] | no_case ["YES"] | no_case ["NO"] | no_case ["TRUE"] | no_case ["ON"] | no_case ["OFF"];
 
-		numeric_literal %= 
+		numeric_literal %=
 			+qi::digit;
 
 		string_literal %=
@@ -131,7 +138,7 @@ template <typename It, typename Skipper = qi::space_type>
         BOOST_SPIRIT_DEBUG_NODE(columns);
         BOOST_SPIRIT_DEBUG_NODE(tables);
     }
-	
+
   private:
     qi::rule<It, std::string()             , Skipper> sqlident;
     qi::rule<It, std::vector<std::string>(), Skipper> columns  , tables;//, whr;
