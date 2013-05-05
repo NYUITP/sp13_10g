@@ -59,6 +59,7 @@ const std::string lt("<"); const std::string gt(">");
 const std::string lte("<="); const std::string gte(">=");
 const std::string et("="); const std::string net(">=");
 const std::string like("like"); const std::string between("between");
+const std::string distinct("distinct"); const std::string all("all");
 
 template <typename It, typename Skipper = qi::space_type>
     struct parser : qi::grammar<It, SelectStatement(), Skipper>
@@ -77,13 +78,19 @@ template <typename It, typename Skipper = qi::space_type>
 
 
         sqlident = lexeme [ alpha >> *alnum ]; // table or column name
-        columns  = no_case [ "select" ] >> -(no_case ["distinct"] | no_case ["ALL"]) >> (sqlident % ',');
+        columns  = no_case [ "select" ] >> -(keywords) >> (sqlident % ',');
         tables   = no_case [ "from" ]   >> (sqlident % ',');
         //whr		 = no_case [ "where" ] >> (some_column);
 
-		comparison_op =
-		string(lt) | string(gt) | string(lte) | string(gte) | string(et) | string(net) | string(like) | string(between);
-
+		comparison_op = string (net)
+				| string (lte) 
+				| string (lt) 
+				| string (et)
+				| string (gte)
+				| string (gt)
+				;
+		keywords %= no_case [string(distinct)]
+						| no_case [string(all)];
 		//boost::spirit::qi::string(">") | boost::spirit::qi::string("<") | boost::spirit::qi::string("<=");// | lit (">=") | lit ("=") | lit ("<>");
 
 		boolean_literal %=
@@ -126,10 +133,14 @@ template <typename It, typename Skipper = qi::space_type>
             >> search_condition//lexeme [ +(char_ - ';') ]
             >> -char_(";");
 
-        BOOST_SPIRIT_DEBUG_NODE(start);
-        BOOST_SPIRIT_DEBUG_NODE(sqlident);
-        BOOST_SPIRIT_DEBUG_NODE(columns);
-        BOOST_SPIRIT_DEBUG_NODE(tables);
+		//search_condition.name("search_condition");
+		//comparison_predicate.name("comparison_predicate");
+		//qi::debug(comparison_predicate);
+        //BOOST_SPIRIT_DEBUG_NODE(start);
+        //BOOST_SPIRIT_DEBUG_NODE(sqlident);
+        //BOOST_SPIRIT_DEBUG_NODE(columns);
+        //BOOST_SPIRIT_DEBUG_NODE(tables);
+		//BOOST_SPIRIT_DEBUG_NODE(search_condition);
     }
 	
   private:
@@ -138,6 +149,7 @@ template <typename It, typename Skipper = qi::space_type>
     qi::rule<It, SelectStatement()         , Skipper> start;
 	qi::rule<It, std::string(), Skipper> compOp;
 	qi::rule<It, std::string(), Skipper> expression;
+	qi::rule <It, std::string()> keywords;
 	qi::rule<It, std::string(), Skipper>
 		boolean_literal,		// TRUE|FALSE|YES|NO|ON|OFF
 		string_literal,			// A sequence of one or more characters (any excluded characters? not for now)
