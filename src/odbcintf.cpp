@@ -241,7 +241,10 @@ SQLExecDirect(SQLHSTMT statementHandle,
               SQLCHAR *query,
               SQLINTEGER queryLen)
 {
-    return SQL_ERROR;
+    mongoodbc::StatementHandle *stmt =
+        static_cast<mongoodbc::StatementHandle *> (statementHandle);
+    
+    return stmt->sqlExec(query, queryLen);
 }
 
 SQLRETURN SQL_API

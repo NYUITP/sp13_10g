@@ -14,9 +14,15 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include <sql_select_statement.h>
+#include "sql_select_statement.h"
 
 namespace mongoodbc {
+
+SQLSelectStatement::SQLSelectStatement()
+    : _all(false)
+    , _distinct(false)
+{
+}
 
 } // close mongoodbc namespace
 

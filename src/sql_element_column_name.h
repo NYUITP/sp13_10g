@@ -14,8 +14,8 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-#ifndef MONGOODBC_SQL_SELECT_STATEMENT_H_
-#define MONGOODBC_SQL_SELECT_STATEMENT_H_
+#ifndef MONGOODBC_SQL_ELEMENT_COLUMN_NAME_H_
+#define MONGOODBC_SQL_ELEMENT_COLUMN_NAME_H_
 
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -40,8 +40,8 @@ inline std::ostream& operator<<(std::ostream& stream, const SQLElementColumnName
 * Parser for SQL 'primary' element statements.
 */
 template <typename It>
-struct SQLElementColumnNameParser : qi::grammar<It, SQLElementColumnName(), ascii::space_type> {
-    qi::rule<It, SQLElementColumnName(), ascii::space_type> _rule;
+struct SQLElementColumnNameParser : qi::grammar<It, SQLElementColumnName()> {
+    qi::rule<It, SQLElementColumnName()> _rule;
     SQLElementColumnNameParser();
 };
 

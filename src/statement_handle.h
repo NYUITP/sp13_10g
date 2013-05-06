@@ -82,6 +82,9 @@ class StatementHandle {
                          SQLCHAR *columnName,
                          SQLSMALLINT columnNameLen);
 
+    SQLRETURN sqlExec(SQLCHAR *query,
+                      SQLINTEGER queryLen);
+
     SQLRETURN sqlNumResultCols(SQLSMALLINT *numColumns);
 
     SQLRETURN sqlFetch();

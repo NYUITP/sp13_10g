@@ -17,9 +17,11 @@
 #ifndef MONGOODBC_SQL_SELECT_STATEMENT_H_
 #define MONGOODBC_SQL_SELECT_STATEMENT_H_
 
-#include <sql_element_search_condition.h>
-
 #include <boost/fusion/adapted.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/variant/variant.hpp>
 
@@ -29,6 +31,8 @@
 
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
+namespace spirit = boost::spirit;
+namespace phoenix = boost::phoenix;
 
 namespace mongoodbc {
 
@@ -36,14 +40,16 @@ namespace mongoodbc {
 * In memory representation of an SQL SELECT statement.
 */
 struct SQLSelectStatement {
-    typedef boost::variant<std::string, std::string> strStrVariant;
-    boost::optional<strStrVariant> _allDistinct;
-    bool _star;
+    bool _all;
+    bool _distinct;
+    std::vector<std::string> _selectList;
     std::vector<std::string> _tableRefList;
-    boost::optional<SQLElementSearchCondition> _searchCondition;
+    //boost::optional<SQLElementSearchCondition> _searchCondition;
 
+    SQLSelectStatement();
 };
 inline std::ostream& operator<<(std::ostream& stream, const SQLSelectStatement& rhs);
+
 
 /*
 * Parser for SQL SELECT statements.
@@ -58,20 +64,44 @@ template <typename It>
 SQLSelectStatementParser<It>::SQLSelectStatementParser()
     : SQLSelectStatementParser::base_type(_rule)
 {
-    _rule %= ascii::no_case["select"]
-             >> -(ascii::no_case[ascii::string("all")] | ascii::no_case[ascii::string("distinct")])
-             >> qi::matches['*']
+    _rule = ascii::no_case["select"]
+             >> -(ascii::no_case[ascii::string("all")] [phoenix::at_c<0>(qi::_val) = true] |
+                 ascii::no_case[ascii::string("distinct")] [phoenix::at_c<1>(qi::_val) = true])
+             >> ('*' |
+                 spirit::as_string[qi::lexeme[ascii::alpha >> *ascii::alnum]]
+                     [phoenix::push_back(phoenix::at_c<2>(qi::_val), qi::labels::_1)] % ",")
              >> ascii::no_case["from"]
-             >> (qi::lexeme[ascii::alpha >> *ascii::alnum] % ',');
+             >> spirit::as_string[qi::lexeme[ascii::alpha >> *ascii::alnum]]
+                     [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::labels::_1)]
+             >> -(spirit::as_string[qi::lexeme[ascii::alpha >> *ascii::alnum]]
+                     [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::labels::_1)] % ",");
 
     BOOST_SPIRIT_DEBUG_NODE(_rule);
 };
 
 } // close mongoodbc namespace
 
+BOOST_FUSION_ADAPT_STRUCT(
+    mongoodbc::SQLSelectStatement,
+    (bool, _all)
+    (bool, _distinct)
+    (std::vector<std::string>, _selectList)
+    (std::vector<std::string>, _tableRefList));
+
 inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
                                            const mongoodbc::SQLSelectStatement& rhs)
 {
+    std::string columns("*");
+    if (rhs._selectList.size()) {
+        columns.clear();
+    }
+    for (size_t i = 0; i < rhs._selectList.size(); ++i) {
+        columns.append(rhs._selectList[i]);
+        if (i < rhs._selectList.size() - 1) {
+            columns.append(", ");
+        }
+    }
+
     std::string tables;
     for (size_t i = 0; i < rhs._tableRefList.size(); ++i) {
         tables.append(rhs._tableRefList[i]);
@@ -80,21 +110,14 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
         }
     }
 
-    stream << "SELECT"
-           << (rhs._allDistinct ? " " : "")
-           << (rhs._allDistinct ? *rhs._allDistinct : "")
-           << (rhs._star ? " *" : "")
-           << " FROM " << tables
-           << " WHERE " << rhs._searchCondition;
+    stream << "SELECT "
+           << (rhs._all ? "ALL " : "")
+           << (rhs._distinct ? "DISTINCT " : "")
+           << columns
+           << " FROM " << tables;
 
    return stream;        
 }
-
-BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLSelectStatement,
-                          (boost::optional<mongoodbc::SQLSelectStatement::strStrVariant>,
-                           _allDistinct)
-                          (bool, _star)
-                          (std::vector<std::string>, _tableRefList));
 
 #endif
 

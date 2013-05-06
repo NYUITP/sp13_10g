@@ -284,6 +284,11 @@ SQLRETURN StatementHandle::sqlColumns(SQLCHAR *catalogName,
     }
     return SQL_SUCCESS;
 }
+
+SQLRETURN StatementHandle::sqlExec(SQLCHAR *query,
+                                   SQLINTEGER queryLen)
+{
+}
     
 SQLRETURN StatementHandle::sqlNumResultCols(SQLSMALLINT *numColumns)
 {

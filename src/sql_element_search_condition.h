@@ -17,11 +17,19 @@
 #ifndef MONGOODBC_SQL_ELEMENT_SEARCH_CONDITION_H_
 #define MONGOODBC_SQL_ELEMENT_SEARCH_CONDITION_H_
 
+#include "sql_element_column_name.h"
+
 #include <boost/fusion/adapted.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/variant/variant.hpp>
 
 #include <ostream>
 #include <string>
+#include <vector>
 
 namespace mongoodbc {
 

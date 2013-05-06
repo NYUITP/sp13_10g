@@ -17,8 +17,7 @@
 #ifndef MONGOODBC_SQL_PARSER_H_
 #define MONGOODBC_SQL_PARSER_H_
 
-#include <sql_select_statement.h>
-#include <sql_element_search_condition.h>
+#include "sql_select_statement.h"
 
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi.hpp>
