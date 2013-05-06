@@ -54,6 +54,7 @@ SQLParser<It>::SQLParser()
     : SQLParser::base_type(_start)
 {
     _start %= _selectStmtParser._rule | qi::attr(false);
+
     BOOST_SPIRIT_DEBUG_NODE(_start);
 }
 

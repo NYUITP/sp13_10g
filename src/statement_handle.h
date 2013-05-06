@@ -17,6 +17,8 @@
 #ifndef MONGOODBC_STATEMENT_HANDLE_H_
 #define MONGOODBC_STATEMENT_HANDLE_H_
 
+#include "sql_parser.h"
+
 #include <sql.h>
 #include <sqlext.h>
 
@@ -50,6 +52,9 @@ class StatementHandle {
     // mongoDB cursor (i.e. SQLTables, SQLColumns).
     std::vector<std::list<Result> > _resultSet;
     int _rowIdx;
+
+    // parser for SQL statements
+    SQLParser<std::string::const_iterator> _parser;
 
     SQLSMALLINT mapMongoToODBCDataType(mongo::BSONType type);
     const char *dataTypeName(SQLSMALLINT type);

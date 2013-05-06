@@ -15,10 +15,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include <statement_handle.h>
-#include <connection_handle.h>
+#include "statement_handle.h"
+#include "connection_handle.h"
 
 #include <boost/variant/get.hpp>
+#include <boost/spirit/include/qi.hpp>
 
 #include <string.h>
 
@@ -288,6 +289,23 @@ SQLRETURN StatementHandle::sqlColumns(SQLCHAR *catalogName,
 SQLRETURN StatementHandle::sqlExec(SQLCHAR *query,
                                    SQLINTEGER queryLen)
 {
+    SQLStatement stmt;
+    std::string queryStr;
+    if (queryLen == SQL_NTS) {
+        queryStr.assign((char *)query);
+    } else {
+        queryStr.assign((char *)query, (int)queryLen);
+    }
+    std::string::const_iterator queryBegin = queryStr.begin();
+    std::string::const_iterator queryEnd = queryStr.end();
+    bool parseRc = boost::spirit::qi::phrase_parse(queryBegin,
+                                                   queryEnd,
+                                                   _parser,
+                                                   boost::spirit::ascii::space,
+                                                   stmt);
+    if (!parseRc) {
+        return SQL_ERROR;
+    }
 }
     
 SQLRETURN StatementHandle::sqlNumResultCols(SQLSMALLINT *numColumns)
