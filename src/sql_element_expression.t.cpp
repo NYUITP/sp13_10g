@@ -31,7 +31,7 @@ TEST(ElementExpression_PrimaryParseTest, DynamicParameter)
     try
     {
         EXPECT_TRUE(
-            boost::spirit::qi::parse(iter, end, parser, primary));
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -51,7 +51,7 @@ TEST(ElementExpression_PrimaryParseTest, ColumnName)
     try
     {
         EXPECT_TRUE(
-            boost::spirit::qi::parse(iter, end, parser, primary));
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -71,7 +71,7 @@ TEST(ElementExpression_PrimaryParseTest, TableNameColumnName)
     try
     {
         EXPECT_TRUE(
-            boost::spirit::qi::parse(iter, end, parser, primary));
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -91,7 +91,7 @@ TEST(ElementExpression_PrimaryParseTest, StringLiteral)
     try
     {
         EXPECT_TRUE(
-            boost::spirit::qi::parse(iter, end, parser, primary));
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -111,7 +111,7 @@ TEST(ElementExpression_PrimaryParseTest, StringLiteralDoubleQuote)
     try
     {
         EXPECT_TRUE(
-            boost::spirit::qi::parse(iter, end, parser, primary));
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -131,7 +131,7 @@ TEST(ElementExpression_FactorParseTest, StringLiteral)
     try
     {
         EXPECT_TRUE(
-            boost::spirit::qi::parse(iter, end, parser, factor));
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, factor));
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {

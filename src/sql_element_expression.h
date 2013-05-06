@@ -43,17 +43,26 @@ class SQLElementExpression;
 template <typename It>
 class SQLElementExpressionParser;
 
+/*
 typedef boost::variant<
     SQLElementColumnName,
     char,
     std::string> SQLElementExpression_Primary;
+*/
+
+struct SQLElementExpression_Primary {
+    boost::optional<SQLElementColumnName> _columnName;
+    boost::optional<char> _dynamicParameter;
+    boost::optional<std::string> _literal;
+    std::vector<boost::recursive_wrapper<SQLElementExpression> > _expr;
+};
 
 template <typename It>
 struct SQLElementExpression_PrimaryParser
-    : qi::grammar<It, SQLElementExpression_Primary()> {
+    : qi::grammar<It, SQLElementExpression_Primary(), ascii::space_type> {
 
     qi::rule<It, std::string()> _quotedString;
-    qi::rule<It, SQLElementExpression_Primary()> _rule;
+    qi::rule<It, SQLElementExpression_Primary(), ascii::space_type> _rule;
     SQLElementExpressionParser<It> *_exprParser;
     SQLElementColumnNameParser<It> _columnNameParser;
 
@@ -73,9 +82,10 @@ SQLElementExpression_PrimaryParser<It>::SQLElementExpression_PrimaryParser(
                          ascii::char_(";:'?/\\|,.<>!@#$%^&*()-_+=[]{}~`"))
                     >> ascii::char_('"');
 
-    _rule = _columnNameParser._rule|
-             ascii::char_('?') |
-             _quotedString;
+    _rule = _columnNameParser._rule [phoenix::at_c<0>(qi::_val) = qi::_1] |
+             ascii::char_('?') [phoenix::at_c<1>(qi::_val) = qi::_1] |
+             _quotedString [phoenix::at_c<2>(qi::_val) = qi::_1] |
+             _exprParser->_rule [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::_1)];
 
     BOOST_SPIRIT_DEBUG_NODE(_rule);
 };
@@ -91,9 +101,9 @@ struct SQLElementExpression_Factor {
 
 template <typename It>
 struct SQLElementExpression_FactorParser
-    : qi::grammar<It, SQLElementExpression_Factor()> {
+    : qi::grammar<It, SQLElementExpression_Factor(), ascii::space_type> {
 
-    qi::rule<It, SQLElementExpression_Factor()> _rule;
+    qi::rule<It, SQLElementExpression_Factor(), ascii::space_type> _rule;
     SQLElementExpression_PrimaryParser<It> _primaryParser;
 
     SQLElementExpression_FactorParser(SQLElementExpressionParser<It> *);
@@ -176,6 +186,13 @@ SQLElementExpressionParser<It>::SQLElementExpressionParser()
 };
 
 } // close mongoodbc namespace
+
+BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLElementExpression_Primary,
+                          (boost::optional<mongoodbc::SQLElementColumnName>, _columnName)
+                          (boost::optional<char>, _dynamicParameter)
+                          (boost::optional<std::string>, _literal)
+                          (std::vector<boost::recursive_wrapper<mongoodbc::SQLElementExpression> >, _expr));
+
 
 BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLElementExpression_Factor,
                           (char, _op)

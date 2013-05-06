@@ -40,8 +40,9 @@ inline std::ostream& operator<<(std::ostream& stream, const SQLElementColumnName
 * Parser for SQL 'primary' element statements.
 */
 template <typename It>
-struct SQLElementColumnNameParser : qi::grammar<It, SQLElementColumnName()> {
-    qi::rule<It, SQLElementColumnName()> _rule;
+struct SQLElementColumnNameParser
+    : qi::grammar<It, SQLElementColumnName(), ascii::space_type> {
+    qi::rule<It, SQLElementColumnName(), ascii::space_type> _rule;
     SQLElementColumnNameParser();
 };
 
