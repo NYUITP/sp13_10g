@@ -52,6 +52,7 @@ TEST(SQLSelectStatement, SelectStar)
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
         EXPECT_FALSE(stmt._all);
         EXPECT_FALSE(stmt._distinct);
+        EXPECT_EQ(0, stmt._selectList.size());
         std::cout << "SELECT Stmt: " << stmt << std::endl;
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
@@ -74,6 +75,7 @@ TEST(SQLSelectStatement, SelectAllStar)
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
         EXPECT_TRUE(stmt._all);
         EXPECT_FALSE(stmt._distinct);
+        EXPECT_EQ(0, stmt._selectList.size());
         std::cout << "SELECT Stmt: " << stmt << std::endl;
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
@@ -96,6 +98,53 @@ TEST(SQLSelectStatement, SelectDistinctStar)
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
         EXPECT_FALSE(stmt._all);
         EXPECT_TRUE(stmt._distinct);
+        EXPECT_EQ(0, stmt._selectList.size());
+        std::cout << "SELECT Stmt: " << stmt << std::endl;
+    }
+    catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
+    {
+        std::string fragment(ex.first, ex.last);
+        std::cerr << ex.what() << "'" << fragment << "'" << std::endl;
+    }
+}
+
+TEST(SQLSelectStatement, SelectColumn)
+{
+    mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
+    mongoodbc::SQLSelectStatement stmt;
+    std::string query("SELECT columnName FROM table");
+    std::string::const_iterator iter = query.begin();
+    std::string::const_iterator end = query.end();
+    try
+    {
+        EXPECT_TRUE(
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
+        EXPECT_FALSE(stmt._all);
+        EXPECT_FALSE(stmt._distinct);
+        EXPECT_EQ(1, stmt._selectList.size());
+        std::cout << "SELECT Stmt: " << stmt << std::endl;
+    }
+    catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
+    {
+        std::string fragment(ex.first, ex.last);
+        std::cerr << ex.what() << "'" << fragment << "'" << std::endl;
+    }
+}
+
+TEST(SQLSelectStatement, SelectTableColumn)
+{
+    mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
+    mongoodbc::SQLSelectStatement stmt;
+    std::string query("SELECT tableName.columnName FROM table");
+    std::string::const_iterator iter = query.begin();
+    std::string::const_iterator end = query.end();
+    try
+    {
+        EXPECT_TRUE(
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
+        EXPECT_FALSE(stmt._all);
+        EXPECT_FALSE(stmt._distinct);
+        EXPECT_EQ(1, stmt._selectList.size());
         std::cout << "SELECT Stmt: " << stmt << std::endl;
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)

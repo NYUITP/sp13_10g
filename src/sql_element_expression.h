@@ -75,12 +75,13 @@ SQLElementExpression_PrimaryParser<It>::SQLElementExpression_PrimaryParser(
     : SQLElementExpression_PrimaryParser::base_type(_rule)
     , _exprParser(exprParser)
 {
-    _quotedString = ascii::char_('"') 
-                    >> *(ascii::alnum |
-                         ascii::space |
-                         "\"\"" |
-                         ascii::char_(";:'?/\\|,.<>!@#$%^&*()-_+=[]{}~`"))
-                    >> ascii::char_('"');
+    _quotedString = qi::as_string[
+                        ascii::char_('"') 
+                        >> *(ascii::alnum |
+                             ascii::space |
+                             "\"\"" |
+                             ascii::char_(";:'?/\\|,.<>!@#$%^&*()-_+=[]{}~`"))
+                        >> ascii::char_('"')];
 
     _rule = _columnNameParser._rule [phoenix::at_c<0>(qi::_val) = qi::_1] |
              ascii::char_('?') [phoenix::at_c<1>(qi::_val) = qi::_1] |
