@@ -68,8 +68,15 @@ public:
 			//return NULL;
 		}
 		else if (boost::iequals(queryType, SqlConstants::insert)){
-			std::cout << iQuery << std::endl;
-			throw ParserExceptions(UNHANDLED_QUERY);
+			InsertStatement* insSt = new InsertStatement();
+			InserStatement_parser<std::string::const_iterator> g;
+			bool r= qi::phrase_parse (strtIter, endIter, g, qi::space, *insSt);
+			if (r && strtIter==endIter)
+				return new SqlStatement (insSt);
+			else{
+				delete insSt;
+				throw ParserExceptions(SYNTAX_ERROR);
+			}
 		}
 		else if (boost::iequals(queryType, SqlConstants::create)){
 			std::cout << iQuery << std::endl;

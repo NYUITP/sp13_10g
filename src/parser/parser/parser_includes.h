@@ -49,6 +49,8 @@ struct SqlConstants{
 	static const std::string bLiteral_no;
 	static const std::string bLiteral_on;
 	static const std::string bLiteral_off;
+	static const char		 underscore;
+	static const std::string sqlNull;
 
 };
 

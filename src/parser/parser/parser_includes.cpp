@@ -41,3 +41,5 @@ const std::string SqlConstants::bLiteral_yes		= "yes";
 const std::string SqlConstants::bLiteral_no			= "no";
 const std::string SqlConstants::bLiteral_on			= "on";
 const std::string SqlConstants::bLiteral_off		= "off";
+const char SqlConstants::underscore					= '_';
+const std::string SqlConstants::sqlNull				= "NULL";
