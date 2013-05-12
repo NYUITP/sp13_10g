@@ -45,9 +45,7 @@ struct SQLSelectStatement {
     bool _all;
     bool _distinct;
     std::vector<SQLElementExpression> _selectList;
-    //std::vector<std::string> _selectList;
     std::vector<std::string> _tableRefList;
-    //boost::optional<SQLElementSearchCondition> _searchCondition;
 
     SQLSelectStatement();
 };
@@ -72,14 +70,11 @@ SQLSelectStatementParser<It>::SQLSelectStatementParser()
     _rule = ascii::no_case["select"]
              >> -(ascii::no_case[ascii::string("all")] [phoenix::at_c<0>(qi::_val) = true] |
                  ascii::no_case[ascii::string("distinct")] [phoenix::at_c<1>(qi::_val) = true])
-             >> ( qi::lit('*') |
-                 (_exprParser._rule [phoenix::push_back(phoenix::at_c<2>(qi::_val), qi::_1)] >>
-                  _exprParser._rule [phoenix::push_back(phoenix::at_c<2>(qi::_val), qi::_1)] % ","))
+             >> ( '*' |
+                  (_exprParser._rule [phoenix::push_back(phoenix::at_c<2>(qi::_val), qi::_1)] % ','))
              >> ascii::no_case["from"]
              >> spirit::as_string[qi::lexeme[ascii::alpha >> *ascii::alnum]]
-                     [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::labels::_1)]
-             >> -(spirit::as_string[qi::lexeme[ascii::alpha >> *ascii::alnum]]
-                     [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::labels::_1)] % ",");
+                     [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::labels::_1)] % ',';
 
     BOOST_SPIRIT_DEBUG_NODE(_rule);
 };
@@ -101,9 +96,9 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
         columns << "*";
     }
     for (size_t i = 0; i < rhs._selectList.size(); ++i) {
-        columns << rhs._selectList[i];
+        columns << "'" << rhs._selectList[i] << "'";
         if (i < rhs._selectList.size() - 1) {
-            columns << ", ";
+            columns << ",";
         }
     }
 

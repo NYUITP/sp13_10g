@@ -32,6 +32,11 @@ TEST(ElementExpression_PrimaryParseTest, DynamicParameter)
     {
         EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
+        EXPECT_FALSE(primary._columnName);
+        EXPECT_TRUE(primary._dynamicParameter);
+        EXPECT_FALSE(primary._literal);
+        EXPECT_EQ(0, primary._expr.size());
+        EXPECT_EQ('?', *primary._dynamicParameter);
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -52,7 +57,12 @@ TEST(ElementExpression_PrimaryParseTest, ColumnName)
     {
         EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
-        std::cout << "Column Name: " << primary._columnName << std::endl;
+        EXPECT_TRUE(primary._columnName);
+        EXPECT_FALSE(primary._dynamicParameter);
+        EXPECT_FALSE(primary._literal);
+        EXPECT_EQ(0, primary._expr.size());
+        EXPECT_FALSE((*primary._columnName)._tableName);
+        EXPECT_EQ("column", (*primary._columnName)._columnName);
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -73,7 +83,13 @@ TEST(ElementExpression_PrimaryParseTest, TableNameColumnName)
     {
         EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
-        std::cout << "Column Name: " << primary._columnName << std::endl;
+        EXPECT_TRUE(primary._columnName);
+        EXPECT_FALSE(primary._dynamicParameter);
+        EXPECT_FALSE(primary._literal);
+        EXPECT_EQ(0, primary._expr.size());
+        EXPECT_TRUE((*primary._columnName)._tableName);
+        EXPECT_EQ("column", (*primary._columnName)._columnName);
+        EXPECT_EQ("table", *(*primary._columnName)._tableName);
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -94,7 +110,11 @@ TEST(ElementExpression_PrimaryParseTest, StringLiteral)
     {
         EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
-        std::cout << "Literal: " << primary._literal << std::endl;
+        EXPECT_FALSE(primary._columnName);
+        EXPECT_FALSE(primary._dynamicParameter);
+        EXPECT_TRUE(primary._literal);
+        EXPECT_EQ(0, primary._expr.size());
+        EXPECT_EQ("literal", *primary._literal);
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -115,7 +135,11 @@ TEST(ElementExpression_PrimaryParseTest, StringLiteralDoubleQuote)
     {
         EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, primary));
-        std::cout << "Literal: " << primary._literal << std::endl;
+        EXPECT_FALSE(primary._columnName);
+        EXPECT_FALSE(primary._dynamicParameter);
+        EXPECT_TRUE(primary._literal);
+        EXPECT_EQ(0, primary._expr.size());
+        EXPECT_EQ("lite\"ral", *primary._literal);
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -136,6 +160,13 @@ TEST(ElementExpression_FactorParseTest, StringLiteral)
     {
         EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, factor));
+        mongoodbc::SQLElementExpression_Primary& primary = factor._primary;
+        EXPECT_FALSE(primary._columnName);
+        EXPECT_FALSE(primary._dynamicParameter);
+        EXPECT_TRUE(primary._literal);
+        EXPECT_EQ(0, primary._expr.size());
+        EXPECT_EQ("literal", *primary._literal);
+
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -156,6 +187,13 @@ TEST(ElementExpression_FactorParseTest, ColumnName)
     {
         EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, factor));
+        mongoodbc::SQLElementExpression_Primary& primary = factor._primary;
+        EXPECT_TRUE(primary._columnName);
+        EXPECT_FALSE(primary._dynamicParameter);
+        EXPECT_FALSE(primary._literal);
+        EXPECT_EQ(0, primary._expr.size());
+        EXPECT_FALSE((*primary._columnName)._tableName);
+        EXPECT_EQ("column", (*primary._columnName)._columnName);
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -176,6 +214,14 @@ TEST(ElementExpression_FactorParseTest, TableNameColumnName)
     {
         EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, factor));
+        mongoodbc::SQLElementExpression_Primary& primary = factor._primary;
+        EXPECT_TRUE(primary._columnName);
+        EXPECT_FALSE(primary._dynamicParameter);
+        EXPECT_FALSE(primary._literal);
+        EXPECT_EQ(0, primary._expr.size());
+        EXPECT_TRUE((*primary._columnName)._tableName);
+        EXPECT_EQ("column", (*primary._columnName)._columnName);
+        EXPECT_EQ("table", *(*primary._columnName)._tableName);
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
