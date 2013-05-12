@@ -13,9 +13,9 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <iterator> //for std::ostream_iterator
-#include <algorithm> //for std::copy
-#include <iostream> //for std::cout
+#include <iterator> 
+#include <algorithm> 
+#include <iostream> 
 #include <string>
 #include <list>
 #include <fstream>
@@ -115,7 +115,6 @@ std::set<string> getCollFields(DBClientConnection& c, string db, string collecti
         while( cursor->more() ) {
             //  get next doc/row/tuple
             BSONObj doc = cursor->next();
-        
             if(longest < doc.nFields()){
                 longest = doc.nFields();
                 doc.getFieldNames(fieldnames);
