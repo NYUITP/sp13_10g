@@ -30,10 +30,10 @@ using namespace mongo;
 
 
 void printQueryResults(auto_ptr<DBClientCursor> cursor){
-    cout<<"Enter BSON DUMPER"<<endl;
+    std::cout<<"Enter BSON DUMPER"<<std::endl;
     
     while( cursor->more() ) {
-        cout << cursor->next().toString() << endl;
+        std::cout<<cursor->next().toString()<<std::endl;
     }
 }
 
