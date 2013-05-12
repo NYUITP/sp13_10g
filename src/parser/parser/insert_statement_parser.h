@@ -42,22 +42,25 @@ namespace qi = boost::spirit::qi;
 
 typedef boost::variant<int, double, std::string> valueType;
 
-class values_visitor: public boost::static_visitor<int>
+class values_visitor: public boost::static_visitor<>
 {
 public:
-    int operator()(int& i) const
+    void operator()(int& i) const
     {
-        return i;
+        
     }
     
-    const std::string operator()(const std::string & str) const
+    void operator()(std::string & str) const
     {
-        return str;
+		const std::string quotes = "\"";
+        str.insert (0, quotes);
+		str.insert(str.length(), quotes);
+		
     }
 
-	double operator()(double& df) const
+	void operator()(double& df) const
 	{
-		return df;
+		
 	}
 };
 
@@ -88,7 +91,8 @@ public:
 			output.append("\nAttribute:  { ");
 			output.append(attribute_list[i]);
 			output.append (" : ");
-			output.append (boost::lexical_cast<std::string> (value_list[i]));
+			boost::apply_visitor( values_visitor(), value_list[i] ); 
+			output.append (boost::lexical_cast<std::string> ( value_list[i] ));
 			output.append (" }");
 			///output.append(value_list[i]);
 		}
@@ -139,8 +143,8 @@ struct InserStatement_parser : qi::grammar <Iterator, InsertStatement(), Skipper
 
 		//table_name.name("table");
 		//debug(table_name);
-		start.name("start");
-		debug(start);
+		//start.name("start");
+		//debug(start);
 	}
 
 	qi::rule <Iterator, std::string(), Skipper> quoted_string;
