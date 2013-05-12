@@ -14,9 +14,9 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-#include <sql_element_search_condition.h>
+#include "sql_element_search_condition.h"
 
 namespace mongoodbc {
 
-} // close mongoodbc namespace
+}
 

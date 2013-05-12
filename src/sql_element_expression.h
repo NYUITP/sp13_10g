@@ -54,6 +54,7 @@ struct SQLElementExpression_Primary {
     boost::optional<SQLElementColumnName> _columnName;
     boost::optional<char> _dynamicParameter;
     boost::optional<std::string> _literal;
+    boost::optional<unsigned long> _num;
     std::vector<boost::recursive_wrapper<SQLElementExpression> > _expr;
 };
 inline std::ostream& operator<<(std::ostream& stream, const SQLElementExpression_Primary& rhs);
@@ -86,7 +87,8 @@ SQLElementExpression_PrimaryParser<It>::SQLElementExpression_PrimaryParser(
     _rule = _columnNameParser._rule [phoenix::at_c<0>(qi::_val) = qi::_1] |
              ascii::char_('?') [phoenix::at_c<1>(qi::_val) = qi::_1] |
              _quotedString [phoenix::at_c<2>(qi::_val) = qi::_1] |
-             _exprParser->_rule [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::_1)];
+             qi::ulong_  [phoenix::at_c<3>(qi::_val) = qi::_1] |
+            ('(' >> _exprParser->_rule [phoenix::push_back(phoenix::at_c<4>(qi::_val), qi::_1)] >> ')');
 
     BOOST_SPIRIT_DEBUG_NODE(_rule);
 };
@@ -169,6 +171,8 @@ struct SQLElementExpression {
     std::vector<boost::recursive_wrapper<SQLElementExpression> > _expr;
     char _op;
     SQLElementExpression_Term _term;
+
+    void toString(std::string *str) const;
 };
 inline std::ostream& operator<<(std::ostream& stream, const SQLElementExpression& rhs);
 
@@ -199,6 +203,7 @@ BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLElementExpression_Primary,
                           (boost::optional<mongoodbc::SQLElementColumnName>, _columnName)
                           (boost::optional<char>, _dynamicParameter)
                           (boost::optional<std::string>, _literal)
+                          (boost::optional<unsigned long>, _num)
                           (std::vector<boost::recursive_wrapper<mongoodbc::SQLElementExpression> >, _expr));
 
 
@@ -225,6 +230,8 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
         stream << *rhs._dynamicParameter;
     } else if (rhs._literal) {
         stream << *rhs._literal;
+    } else if (rhs._num) {
+        stream << *rhs._num;
     } else if (rhs._expr.size()) {
         stream << rhs._expr[0].get();
     }

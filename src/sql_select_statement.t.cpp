@@ -31,6 +31,7 @@ TEST(SQLSelectStatement, Breathing)
     try
     {
         boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt);
+        std::cout << "SELECT Stmt: " << stmt << std::endl;
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
     {
@@ -145,6 +146,29 @@ TEST(SQLSelectStatement, SelectTableColumn)
         EXPECT_FALSE(stmt._all);
         EXPECT_FALSE(stmt._distinct);
         EXPECT_EQ(1, stmt._selectList.size());
+        std::cout << "SELECT Stmt: " << stmt << std::endl;
+    }
+    catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
+    {
+        std::string fragment(ex.first, ex.last);
+        std::cerr << ex.what() << "'" << fragment << "'" << std::endl;
+    }
+}
+
+TEST(SQLSelectStatement, SelectStarWhere)
+{
+    mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
+    mongoodbc::SQLSelectStatement stmt;
+    std::string query("SELECT * FROM table WHERE age > 5");
+    std::string::const_iterator iter = query.begin();
+    std::string::const_iterator end = query.end();
+    try
+    {
+        EXPECT_TRUE(
+            boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, stmt));
+        EXPECT_FALSE(stmt._all);
+        EXPECT_FALSE(stmt._distinct);
+        EXPECT_EQ(0, stmt._selectList.size());
         std::cout << "SELECT Stmt: " << stmt << std::endl;
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)

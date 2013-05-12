@@ -18,12 +18,16 @@
 #define MONGOODBC_SQL_SELECT_STATEMENT_H_
 
 #include "sql_element_expression.h"
+#include "sql_element_search_condition.h"
+
+#include <mongo/bson/bsonobj.h>
 
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_fusion.hpp>
 #include <boost/spirit/include/phoenix_stl.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/home/phoenix/object/construct.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/variant/variant.hpp>
 
@@ -46,6 +50,7 @@ struct SQLSelectStatement {
     bool _distinct;
     std::vector<SQLElementExpression> _selectList;
     std::vector<std::string> _tableRefList;
+    boost::optional<mongo::Query> _whereClause;
 
     SQLSelectStatement();
 };
@@ -59,6 +64,7 @@ template <typename It>
 struct SQLSelectStatementParser : qi::grammar<It, SQLSelectStatement(), ascii::space_type> {
     qi::rule<It, SQLSelectStatement(), ascii::space_type> _rule;
     SQLElementExpressionParser<It> _exprParser;
+    SQLElementSearchConditionParser<It> _searchCondParser;
 
     SQLSelectStatementParser();
 };
@@ -66,15 +72,18 @@ struct SQLSelectStatementParser : qi::grammar<It, SQLSelectStatement(), ascii::s
 template <typename It>
 SQLSelectStatementParser<It>::SQLSelectStatementParser()
     : SQLSelectStatementParser::base_type(_rule)
+    , _searchCondParser(&_exprParser)
 {
     _rule = ascii::no_case["select"]
-             >> -(ascii::no_case[ascii::string("all")] [phoenix::at_c<0>(qi::_val) = true] |
-                 ascii::no_case[ascii::string("distinct")] [phoenix::at_c<1>(qi::_val) = true])
+             >> -(ascii::no_case["all"] [phoenix::at_c<0>(qi::_val) = true] |
+                 ascii::no_case["distinct"] [phoenix::at_c<1>(qi::_val) = true])
              >> ( '*' |
                   (_exprParser._rule [phoenix::push_back(phoenix::at_c<2>(qi::_val), qi::_1)] % ','))
              >> ascii::no_case["from"]
              >> spirit::as_string[qi::lexeme[ascii::alpha >> *ascii::alnum]]
-                     [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::labels::_1)] % ',';
+                     [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::_1)] % ','
+             >> -(ascii::no_case["where"]
+                  >> _searchCondParser._rule) [phoenix::at_c<4>(qi::_val) = phoenix::construct<mongo::Query>(qi::_1)];
 
     BOOST_SPIRIT_DEBUG_NODE(_rule);
 };
@@ -86,7 +95,8 @@ BOOST_FUSION_ADAPT_STRUCT(
     (bool, _all)
     (bool, _distinct)
     (std::vector<mongoodbc::SQLElementExpression>, _selectList)
-    (std::vector<std::string>, _tableRefList));
+    (std::vector<std::string>, _tableRefList)
+    (boost::optional<mongo::Query>, _whereClause));
 
 inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
                                            const mongoodbc::SQLSelectStatement& rhs)
@@ -114,7 +124,9 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
            << (rhs._all ? "ALL " : "")
            << (rhs._distinct ? "DISTINCT " : "")
            << columns.str()
-           << " FROM " << tables;
+           << " FROM " << tables
+           << (rhs._whereClause ? " WHERE " : "")
+           << (rhs._whereClause ? rhs._whereClause->toString() : "");
 
    return stream;        
 }

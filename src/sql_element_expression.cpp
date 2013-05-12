@@ -18,6 +18,13 @@
 
 namespace mongoodbc {
 
+void SQLElementExpression::toString(std::string *str) const
+{
+    std::stringstream stream;
+    stream << *this;
+    *str = stream.str();
+}
+
 } // close mongoodbc namespace
 
 
