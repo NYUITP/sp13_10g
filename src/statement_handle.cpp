@@ -103,6 +103,7 @@ SQLRETURN StatementHandle::sqlTables(SQLCHAR *catalogName,
                                      SQLCHAR *tableType,
                                      SQLSMALLINT tableTypeLen)
 {
+    _cursor.reset();
     _resultSet.clear();
     _rowIdx = -1;
     if (NULL != tableType) {
@@ -188,6 +189,7 @@ SQLRETURN StatementHandle::sqlColumns(SQLCHAR *catalogName,
                                       SQLCHAR *columnName,
                                       SQLSMALLINT columnNameLen)
 {
+    _cursot.reset();
     _resultSet.clear();
     _rowIdx = -1;
 
@@ -289,6 +291,8 @@ SQLRETURN StatementHandle::sqlColumns(SQLCHAR *catalogName,
 SQLRETURN StatementHandle::sqlExec(SQLCHAR *query,
                                    SQLINTEGER queryLen)
 {
+    _resultSet.clear();
+    _rowIdx = -1;
     SQLStatement stmt;
     std::string queryStr;
     if (queryLen == SQL_NTS) {
@@ -306,6 +310,28 @@ SQLRETURN StatementHandle::sqlExec(SQLCHAR *query,
     if (!parseRc) {
         return SQL_ERROR;
     }
+
+    std::cout << "Parsed SQL Query: " << stmt << std::endl;
+
+    SQLSelectStatement& selectStmt = boost::get<SQLSelectStatement>(stmt);
+
+    if (!selectStmt._whereClause) {
+        // set to a blank query
+        selectStmt._whereClause = mongo::Query();
+    }
+
+    _cursor = _connHandle->query(selectStmt._tableRefList[0],
+                                 *selectStmt._whereClause);
+
+     // TODO: Remove double lookup
+     while (_cursor->more()) {
+         std::cout << _cursor->next() << std::endl;
+     }
+
+     _cursor = _connHandle->query(selectStmt._tableRefList[0],
+                                 *selectStmt._whereClause);
+
+    return SQL_SUCCESS;
 }
     
 SQLRETURN StatementHandle::sqlNumResultCols(SQLSMALLINT *numColumns)

@@ -62,6 +62,7 @@ inline std::ostream& operator<<(std::ostream& stream, const SQLSelectStatement& 
 */
 template <typename It>
 struct SQLSelectStatementParser : qi::grammar<It, SQLSelectStatement(), ascii::space_type> {
+    qi::rule<It, std::string(), ascii::space_type> _namespace;
     qi::rule<It, SQLSelectStatement(), ascii::space_type> _rule;
     SQLElementExpressionParser<It> _exprParser;
     SQLElementSearchConditionParser<It> _searchCondParser;
@@ -74,14 +75,14 @@ SQLSelectStatementParser<It>::SQLSelectStatementParser()
     : SQLSelectStatementParser::base_type(_rule)
     , _searchCondParser(&_exprParser)
 {
+    _namespace %= qi::lexeme[ascii::alpha >> *ascii::alnum >> ascii::char_('.') >> ascii::alpha >> *ascii::alnum];
     _rule = ascii::no_case["select"]
              >> -(ascii::no_case["all"] [phoenix::at_c<0>(qi::_val) = true] |
                  ascii::no_case["distinct"] [phoenix::at_c<1>(qi::_val) = true])
              >> ( '*' |
                   (_exprParser._rule [phoenix::push_back(phoenix::at_c<2>(qi::_val), qi::_1)] % ','))
              >> ascii::no_case["from"]
-             >> spirit::as_string[qi::lexeme[ascii::alpha >> *ascii::alnum]]
-                     [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::_1)] % ','
+             >> _namespace [phoenix::push_back(phoenix::at_c<3>(qi::_val), qi::_1)] % ','
              >> -(ascii::no_case["where"]
                   >> _searchCondParser._rule) [phoenix::at_c<4>(qi::_val) = phoenix::construct<mongo::Query>(qi::_1)];
 
@@ -106,17 +107,17 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
         columns << "*";
     }
     for (size_t i = 0; i < rhs._selectList.size(); ++i) {
-        columns << "'" << rhs._selectList[i] << "'";
+        columns << rhs._selectList[i];
         if (i < rhs._selectList.size() - 1) {
             columns << ",";
         }
     }
 
-    std::string tables;
+    std::stringstream tables;
     for (size_t i = 0; i < rhs._tableRefList.size(); ++i) {
-        tables.append(rhs._tableRefList[i]);
+        tables << rhs._tableRefList[i];
         if (i < rhs._tableRefList.size() - 1) {
-            tables.append(", ");
+            tables << ",";
         }
     }
 
@@ -124,7 +125,7 @@ inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
            << (rhs._all ? "ALL " : "")
            << (rhs._distinct ? "DISTINCT " : "")
            << columns.str()
-           << " FROM " << tables
+           << " FROM " << tables.str()
            << (rhs._whereClause ? " WHERE " : "")
            << (rhs._whereClause ? rhs._whereClause->toString() : "");
 

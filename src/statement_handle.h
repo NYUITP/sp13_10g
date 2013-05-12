@@ -53,6 +53,9 @@ class StatementHandle {
     std::vector<std::list<Result> > _resultSet;
     int _rowIdx;
 
+    // cursor used to store the result of a datbase query that is retrurned incrementally
+    std::auto_ptr<mongo::DBClientCursor> _cursor;
+
     // parser for SQL statements
     SQLParser<std::string::const_iterator> _parser;
 

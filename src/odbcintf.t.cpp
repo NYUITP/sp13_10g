@@ -324,6 +324,103 @@ TEST_F(SQLColumnsTest, Breathing)
     }
 }
 
+class SQLExecDirectTest : public SQLTablesTest {
+  public:
+    typedef std::map<std::string, int> Fields;
+    typedef std::vector<Fields> Objects;
+    typedef std::map<std::string, Objects> Collections;
+    Collections _collections;
+
+  protected:
+    virtual void SetUp()
+    {
+        SQLTablesTest::SetUp();
+
+        std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+        for (; it != _dbs.end(); ++it) {
+            std::set<std::string>::const_iterator colIt = it->second.begin();
+            for (; colIt != it->second.end(); ++colIt) {
+                std::stringstream collectionNameStream;
+                collectionNameStream << it->first
+                                     << '.'
+                                     << *colIt;
+                std::string collectionName(collectionNameStream.str());
+                Collections::iterator colIt = 
+                    _collections.insert(std::make_pair(collectionName, Objects())).first;
+                Objects& objs = colIt->second;
+                objs.push_back(Fields());
+                Fields& fields = objs.back();
+                std::vector<mongo::BSONObj> bsonObjs;
+                for (int i = 0; i < 5; ++i) {
+                    mongo::BSONObjBuilder builder;
+                    fields.insert(std::make_pair("a", 1));
+                    builder.append("a", i);
+                    fields.insert(std::make_pair("b", 2));
+                    builder.append("b", i+10);
+                    bsonObjs.push_back(builder.obj());
+                }
+                ASSERT_NO_THROW(_conn.insert(collectionName, bsonObjs));
+            }
+        }
+    }
+
+    virtual void TearDown()
+    {
+        SQLTablesTest::TearDown();
+    }
+
+};
+
+TEST_F(SQLExecDirectTest, SELECT)
+{
+    std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+    for (; it != _dbs.end(); ++it) {
+        std::set<std::string>::const_iterator colIt = it->second.begin();
+        for (; colIt != it->second.end(); ++colIt) {
+            std::stringstream queryStream;
+            queryStream << "SELECT * FROM "
+                        << it->first << '.' << *colIt;
+            std::cout << queryStream.str() << std::endl;
+
+            SQLRETURN ret = SQLExecDirect(_stmtHandle, (SQLCHAR *)queryStream.str().c_str(), SQL_NTS);
+        }
+    }
+}
+
+TEST_F(SQLExecDirectTest, SELECT_WHERE)
+{
+    std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+    for (; it != _dbs.end(); ++it) {
+        std::set<std::string>::const_iterator colIt = it->second.begin();
+        for (; colIt != it->second.end(); ++colIt) {
+            std::stringstream queryStream;
+            queryStream << "SELECT * FROM "
+                        << it->first << '.' << *colIt
+                        << " WHERE a > 2";
+            std::cout << queryStream.str() << std::endl;
+
+            SQLRETURN ret = SQLExecDirect(_stmtHandle, (SQLCHAR *)queryStream.str().c_str(), SQL_NTS);
+        }
+    }
+}
+
+TEST_F(SQLExecDirectTest, SELECT_WHERE_AND)
+{
+    std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+    for (; it != _dbs.end(); ++it) {
+        std::set<std::string>::const_iterator colIt = it->second.begin();
+        for (; colIt != it->second.end(); ++colIt) {
+            std::stringstream queryStream;
+            queryStream << "SELECT * FROM "
+                        << it->first << '.' << *colIt
+                        << " WHERE a > 1 AND b < 13";
+            std::cout << queryStream.str() << std::endl;
+
+            SQLRETURN ret = SQLExecDirect(_stmtHandle, (SQLCHAR *)queryStream.str().c_str(), SQL_NTS);
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
