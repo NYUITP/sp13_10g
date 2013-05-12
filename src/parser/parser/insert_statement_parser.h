@@ -36,10 +36,31 @@ namespace qi = boost::spirit::qi;
 #include <boost/spirit/include/qi.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/fusion/include/io.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <iostream>
 
 typedef boost::variant<int, double, std::string> valueType;
+
+class values_visitor: public boost::static_visitor<int>
+{
+public:
+    int operator()(int& i) const
+    {
+        return i;
+    }
+    
+    const std::string operator()(const std::string & str) const
+    {
+        return str;
+    }
+
+	double operator()(double& df) const
+	{
+		return df;
+	}
+};
+
 
 struct InsertStatement{
 public:
@@ -62,9 +83,14 @@ public:
 		output.append ("Table: ");
 		output.append (table_name);
 		
+		values_visitor visitor;
 		for(std::vector<std::string>::size_type i = 0; i != attribute_list.size(); i++) {
-			output.append("\nAttributes:  ");
+			output.append("\nAttribute:  { ");
 			output.append(attribute_list[i]);
+			output.append (" : ");
+			output.append (boost::lexical_cast<std::string> (value_list[i]));
+			output.append (" }");
+			///output.append(value_list[i]);
 		}
 		output.append ("\n");
 		std::cout << output;
