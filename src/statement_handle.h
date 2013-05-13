@@ -17,6 +17,8 @@
 #ifndef MONGOODBC_STATEMENT_HANDLE_H_
 #define MONGOODBC_STATEMENT_HANDLE_H_
 
+#include "sql_parser.h"
+
 #include <sql.h>
 #include <sqlext.h>
 
@@ -50,6 +52,16 @@ class StatementHandle {
     // mongoDB cursor (i.e. SQLTables, SQLColumns).
     std::vector<std::list<Result> > _resultSet;
     int _rowIdx;
+
+    // cursor used to store the result of a datbase query that is retrurned incrementally
+    std::auto_ptr<mongo::DBClientCursor> _cursor;
+    // vector of (name, type) pairs for the current cursor - based on the first element
+    std::vector<std::pair<std::string, mongo::BSONType> > _cursorColumns;
+    // the last row returned in SQLFetch
+    mongo::BSONObj _row;
+
+    // parser for SQL statements
+    SQLParser<std::string::const_iterator> _parser;
 
     SQLSMALLINT mapMongoToODBCDataType(mongo::BSONType type);
     const char *dataTypeName(SQLSMALLINT type);

@@ -43,17 +43,28 @@ class SQLElementExpression;
 template <typename It>
 class SQLElementExpressionParser;
 
+/*
 typedef boost::variant<
     SQLElementColumnName,
     char,
     std::string> SQLElementExpression_Primary;
+*/
+
+struct SQLElementExpression_Primary {
+    boost::optional<SQLElementColumnName> _columnName;
+    boost::optional<char> _dynamicParameter;
+    boost::optional<std::string> _literal;
+    boost::optional<unsigned long> _num;
+    std::vector<boost::recursive_wrapper<SQLElementExpression> > _expr;
+};
+inline std::ostream& operator<<(std::ostream& stream, const SQLElementExpression_Primary& rhs);
 
 template <typename It>
 struct SQLElementExpression_PrimaryParser
-    : qi::grammar<It, SQLElementExpression_Primary()> {
+    : qi::grammar<It, SQLElementExpression_Primary(), ascii::space_type> {
 
     qi::rule<It, std::string()> _quotedString;
-    qi::rule<It, SQLElementExpression_Primary()> _rule;
+    qi::rule<It, SQLElementExpression_Primary(), ascii::space_type> _rule;
     SQLElementExpressionParser<It> *_exprParser;
     SQLElementColumnNameParser<It> _columnNameParser;
 
@@ -66,16 +77,18 @@ SQLElementExpression_PrimaryParser<It>::SQLElementExpression_PrimaryParser(
     : SQLElementExpression_PrimaryParser::base_type(_rule)
     , _exprParser(exprParser)
 {
-    _quotedString = ascii::char_('"') 
-                    >> *(ascii::alnum |
-                         ascii::space |
-                         "\"\"" |
-                         ascii::char_(";:'?/\\|,.<>!@#$%^&*()-_+=[]{}~`"))
-                    >> ascii::char_('"');
+    _quotedString %= '"'
+                     >> qi::no_skip[*(ascii::alnum |
+                                     ascii::space |
+                                     "\"\"" |
+                                     ascii::char_(";:'?/\\|,.<>!@#$%^&*()-_+=[]{}~`"))]
+                     >> '"';
 
-    _rule = _columnNameParser._rule|
-             ascii::char_('?') |
-             _quotedString;
+    _rule = _columnNameParser._rule [phoenix::at_c<0>(qi::_val) = qi::_1] |
+             ascii::char_('?') [phoenix::at_c<1>(qi::_val) = qi::_1] |
+             _quotedString [phoenix::at_c<2>(qi::_val) = qi::_1] |
+             qi::ulong_  [phoenix::at_c<3>(qi::_val) = qi::_1] |
+            ('(' >> _exprParser->_rule [phoenix::push_back(phoenix::at_c<4>(qi::_val), qi::_1)] >> ')');
 
     BOOST_SPIRIT_DEBUG_NODE(_rule);
 };
@@ -87,13 +100,19 @@ SQLElementExpression_PrimaryParser<It>::SQLElementExpression_PrimaryParser(
 struct SQLElementExpression_Factor {
     char _op;
     SQLElementExpression_Primary _primary;
+
+    SQLElementExpression_Factor()
+        : _op('\0')
+    {
+    }
 };
+inline std::ostream& operator<<(std::ostream& stream, const SQLElementExpression_Factor& rhs);
 
 template <typename It>
 struct SQLElementExpression_FactorParser
-    : qi::grammar<It, SQLElementExpression_Factor()> {
+    : qi::grammar<It, SQLElementExpression_Factor(), ascii::space_type> {
 
-    qi::rule<It, SQLElementExpression_Factor()> _rule;
+    qi::rule<It, SQLElementExpression_Factor(), ascii::space_type> _rule;
     SQLElementExpression_PrimaryParser<It> _primaryParser;
 
     SQLElementExpression_FactorParser(SQLElementExpressionParser<It> *);
@@ -119,6 +138,7 @@ struct SQLElementExpression_Term {
     char _op;
     SQLElementExpression_Factor _factor;
 };
+inline std::ostream& operator<<(std::ostream& stream, const SQLElementExpression_Term& rhs);
 
 template <typename It>
 struct SQLElementExpression_TermParser
@@ -151,6 +171,8 @@ struct SQLElementExpression {
     std::vector<boost::recursive_wrapper<SQLElementExpression> > _expr;
     char _op;
     SQLElementExpression_Term _term;
+
+    void toString(std::string *str) const;
 };
 inline std::ostream& operator<<(std::ostream& stream, const SQLElementExpression& rhs);
 
@@ -177,6 +199,14 @@ SQLElementExpressionParser<It>::SQLElementExpressionParser()
 
 } // close mongoodbc namespace
 
+BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLElementExpression_Primary,
+                          (boost::optional<mongoodbc::SQLElementColumnName>, _columnName)
+                          (boost::optional<char>, _dynamicParameter)
+                          (boost::optional<std::string>, _literal)
+                          (boost::optional<unsigned long>, _num)
+                          (std::vector<boost::recursive_wrapper<mongoodbc::SQLElementExpression> >, _expr));
+
+
 BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLElementExpression_Factor,
                           (char, _op)
                           (mongoodbc::SQLElementExpression_Primary, _primary));
@@ -192,8 +222,55 @@ BOOST_FUSION_ADAPT_STRUCT(mongoodbc::SQLElementExpression,
                           (mongoodbc::SQLElementExpression_Term, _term));
 
 inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
+                                           const mongoodbc::SQLElementExpression_Primary& rhs)
+{
+    if (rhs._columnName) {
+        stream << *rhs._columnName;
+    } else if (rhs._dynamicParameter) {
+        stream << *rhs._dynamicParameter;
+    } else if (rhs._literal) {
+        stream << *rhs._literal;
+    } else if (rhs._num) {
+        stream << *rhs._num;
+    } else if (rhs._expr.size()) {
+        stream << rhs._expr[0].get();
+    }
+
+    return stream;
+}
+
+inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
+                                           const mongoodbc::SQLElementExpression_Factor& rhs)
+{
+    if (rhs._op) {
+        stream << rhs._op;
+    }
+    stream << rhs._primary;
+
+    return stream;
+}
+
+inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
+                                           const mongoodbc::SQLElementExpression_Term& rhs)
+{
+    if (rhs._term.size()) {
+        stream << rhs._term[0].get() << " " << rhs._op << " ";
+    }
+
+    stream << rhs._factor;
+
+    return stream;
+}
+
+
+
+inline std::ostream& mongoodbc::operator<<(std::ostream& stream,
                                            const mongoodbc::SQLElementExpression& rhs)
 {
+    if (rhs._expr.size()) {
+        stream << rhs._expr[0].get() << " " << rhs._op << " ";
+    }
+    stream << rhs._term;
     return stream;
 }
 

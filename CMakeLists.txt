@@ -43,12 +43,10 @@ src/sql_parser.h
 src/sql_parser.cpp
 src/sql_select_statement.h
 src/sql_select_statement.cpp
+src/sql_element_search_condition.h
+src/sql_element_search_condition.cpp
 src/sql_element_expression.h
 src/sql_element_expression.cpp
-src/sql_element_column_name.h
-src/sql_element_column_name.cpp
-src/sql_select_statement.h
-src/sql_select_statement.cpp
 src/sql_element_column_name.h
 src/sql_element_column_name.cpp
 )
@@ -99,6 +97,14 @@ src/sql_select_statement.t.cpp
 )
 
 TARGET_LINK_LIBRARIES(sql_select_statement_unittest
+mongoodbc
+gtest)
+
+ADD_EXECUTABLE(sql_element_search_condition_unittest
+src/sql_element_search_condition.t.cpp
+)
+
+TARGET_LINK_LIBRARIES(sql_element_search_condition_unittest
 mongoodbc
 gtest)
 

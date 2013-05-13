@@ -20,6 +20,10 @@
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/variant/variant.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
 
 #include <ostream>
 #include <string>
@@ -27,6 +31,24 @@
 
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
+namespace phoenix = boost::phoenix;
+
+namespace {
+struct PrependThis {
+    template<typename Arg>
+    struct result {
+        typedef std::string type;
+    };
+
+    template<typename Arg>
+    std::string operator()(const Arg& str) const
+    {
+        std::string newStr("this.");
+        newStr.append(str);
+        return newStr;
+    }
+};
+}
 
 namespace mongoodbc {
 
@@ -40,8 +62,10 @@ inline std::ostream& operator<<(std::ostream& stream, const SQLElementColumnName
 * Parser for SQL 'primary' element statements.
 */
 template <typename It>
-struct SQLElementColumnNameParser : qi::grammar<It, SQLElementColumnName()> {
-    qi::rule<It, SQLElementColumnName()> _rule;
+struct SQLElementColumnNameParser
+    : qi::grammar<It, SQLElementColumnName(), ascii::space_type> {
+    qi::rule<It, std::string(), ascii::space_type> _userDefinedName;
+    qi::rule<It, SQLElementColumnName(), ascii::space_type> _rule;
     SQLElementColumnNameParser();
 };
 
@@ -49,8 +73,12 @@ template <typename It>
 SQLElementColumnNameParser<It>::SQLElementColumnNameParser()
     : SQLElementColumnNameParser::base_type(_rule)
 {
-    _rule %= -qi::lexeme[ascii::alpha >> *ascii::alnum >> '.']
-             >> qi::lexeme[ascii::alpha >> *ascii::alnum];
+    _userDefinedName %= qi::lexeme[ascii::alpha >> *ascii::alnum];
+
+    phoenix::function<PrependThis> prependThis;
+
+    _rule = -(_userDefinedName >> '.') [phoenix::at_c<0>(qi::_val) = prependThis(qi::_1)]
+             >> _userDefinedName [phoenix::at_c<1>(qi::_val) = prependThis(qi::_1)];
     BOOST_SPIRIT_DEBUG_NODE(_rule);
 };
 

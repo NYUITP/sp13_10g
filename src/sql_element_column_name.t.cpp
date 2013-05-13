@@ -29,8 +29,10 @@ TEST(ElementColumnNameParseTest, ColumnName)
     std::string::const_iterator end = str.end();
     try
     {
-        ASSERT_TRUE(
+        EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, columnName));
+        EXPECT_FALSE(columnName._tableName);
+        EXPECT_EQ("column", columnName._columnName);
         std::cout << "ColumnName: " << columnName << std::endl;
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
@@ -49,8 +51,11 @@ TEST(ElementColumnNameParseTest, TableNameColumnName)
     std::string::const_iterator end = str.end();
     try
     {
-        ASSERT_TRUE(
+        EXPECT_TRUE(
             boost::spirit::qi::phrase_parse(iter, end, parser, boost::spirit::ascii::space, columnName));
+        EXPECT_TRUE(columnName._tableName);
+        EXPECT_EQ("table", *columnName._tableName);
+        EXPECT_EQ("column", columnName._columnName);
         std::cout << "ColumnName: " << columnName << std::endl;
     }
     catch (const boost::spirit::qi::expectation_failure<std::string::const_iterator>& ex)
