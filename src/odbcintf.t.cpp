@@ -383,6 +383,21 @@ TEST_F(SQLExecDirectTest, SELECT)
             std::cout << queryStream.str() << std::endl;
 
             SQLRETURN ret = SQLExecDirect(_stmtHandle, (SQLCHAR *)queryStream.str().c_str(), SQL_NTS);
+            EXPECT_EQ(SQL_SUCCESS, ret);
+            int numResults = 0;
+            int i = 0;
+            while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
+                ++numResults;
+                SQLLEN len;
+                unsigned long int value;
+                ret = SQLGetData(_stmtHandle, 1, SQL_C_ULONG, (SQLPOINTER)&value, sizeof(unsigned long int), &len);
+                EXPECT_EQ(i, value);
+                ret = SQLGetData(_stmtHandle, 2, SQL_C_ULONG, (SQLPOINTER)&value, sizeof(unsigned long int), &len);
+                EXPECT_EQ(i+10, value);
+                EXPECT_TRUE(SQL_SUCCEEDED(ret));
+                ++i;
+            }
+            EXPECT_EQ(5, numResults);
         }
     }
 }
@@ -400,6 +415,21 @@ TEST_F(SQLExecDirectTest, SELECT_WHERE)
             std::cout << queryStream.str() << std::endl;
 
             SQLRETURN ret = SQLExecDirect(_stmtHandle, (SQLCHAR *)queryStream.str().c_str(), SQL_NTS);
+            EXPECT_EQ(SQL_SUCCESS, ret);
+            int numResults = 0;
+            int i = 3;
+            while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
+                ++numResults;
+                SQLLEN len;
+                unsigned long int value;
+                ret = SQLGetData(_stmtHandle, 1, SQL_C_ULONG, (SQLPOINTER)&value, sizeof(unsigned long int), &len);
+                EXPECT_EQ(i, value);
+                ret = SQLGetData(_stmtHandle, 2, SQL_C_ULONG, (SQLPOINTER)&value, sizeof(unsigned long int), &len);
+                EXPECT_EQ(i+10, value);
+                EXPECT_TRUE(SQL_SUCCEEDED(ret));
+                ++i;
+            }
+            EXPECT_EQ(2, numResults);
         }
     }
 }
@@ -417,6 +447,44 @@ TEST_F(SQLExecDirectTest, SELECT_WHERE_AND)
             std::cout << queryStream.str() << std::endl;
 
             SQLRETURN ret = SQLExecDirect(_stmtHandle, (SQLCHAR *)queryStream.str().c_str(), SQL_NTS);
+            EXPECT_EQ(SQL_SUCCESS, ret);
+            int numResults = 0;
+            int i = 2;
+            while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
+                ++numResults;
+                SQLLEN len;
+                unsigned long int value;
+                ret = SQLGetData(_stmtHandle, 1, SQL_C_ULONG, (SQLPOINTER)&value, sizeof(unsigned long int), &len);
+                EXPECT_EQ(i, value);
+                ret = SQLGetData(_stmtHandle, 2, SQL_C_ULONG, (SQLPOINTER)&value, sizeof(unsigned long int), &len);
+                EXPECT_EQ(i+10, value);
+                EXPECT_TRUE(SQL_SUCCEEDED(ret));
+                ++i;
+            }
+            EXPECT_EQ(1, numResults);
+        }
+    }
+}
+
+TEST_F(SQLExecDirectTest, SELECT_WHERE_OR)
+{
+    std::map<std::string, std::set<std::string> >::const_iterator it = _dbs.begin();
+    for (; it != _dbs.end(); ++it) {
+        std::set<std::string>::const_iterator colIt = it->second.begin();
+        for (; colIt != it->second.end(); ++colIt) {
+            std::stringstream queryStream;
+            queryStream << "SELECT * FROM "
+                        << it->first << '.' << *colIt
+                        << " WHERE a > 3 OR b < 11";
+            std::cout << queryStream.str() << std::endl;
+
+            SQLRETURN ret = SQLExecDirect(_stmtHandle, (SQLCHAR *)queryStream.str().c_str(), SQL_NTS);
+            EXPECT_EQ(SQL_SUCCESS, ret);
+            int numResults = 0;
+            while(SQL_SUCCEEDED(ret = SQLFetch(_stmtHandle))) {
+                ++numResults;
+            }
+            EXPECT_EQ(2, numResults);
         }
     }
 }

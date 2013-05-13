@@ -103,6 +103,7 @@ SQLRETURN StatementHandle::sqlTables(SQLCHAR *catalogName,
                                      SQLCHAR *tableType,
                                      SQLSMALLINT tableTypeLen)
 {
+    _cursorColumns.clear();
     _cursor.reset();
     _resultSet.clear();
     _rowIdx = -1;
@@ -189,7 +190,8 @@ SQLRETURN StatementHandle::sqlColumns(SQLCHAR *catalogName,
                                       SQLCHAR *columnName,
                                       SQLSMALLINT columnNameLen)
 {
-    _cursot.reset();
+    _cursorColumns.clear();
+    _cursor.reset();
     _resultSet.clear();
     _rowIdx = -1;
 
@@ -320,16 +322,29 @@ SQLRETURN StatementHandle::sqlExec(SQLCHAR *query,
         selectStmt._whereClause = mongo::Query();
     }
 
+    try {
     _cursor = _connHandle->query(selectStmt._tableRefList[0],
                                  *selectStmt._whereClause);
+    } catch (mongo::AssertionException& ex) {
+        return SQL_ERROR;
+    }
 
-     // TODO: Remove double lookup
-     while (_cursor->more()) {
-         std::cout << _cursor->next() << std::endl;
-     }
+    if (!_cursor.get()) {
+        return SQL_ERROR;
+    }
 
-     _cursor = _connHandle->query(selectStmt._tableRefList[0],
-                                 *selectStmt._whereClause);
+    std::vector<mongo::BSONObj> firstRows;
+    _cursor->peek(firstRows, 1);
+    if (!firstRows.size()) {
+        // 0 results
+        return SQL_SUCCESS;
+    }
+    mongo::BSONObj::iterator fieldIt = firstRows[0].begin();
+    while(fieldIt.more()) {
+        mongo::BSONElement elem = fieldIt.next();
+        mongo::BSONType dataType = elem.type();
+        _cursorColumns.push_back(std::make_pair(elem.fieldName(), dataType));
+    }
 
     return SQL_SUCCESS;
 }
@@ -346,9 +361,16 @@ SQLRETURN StatementHandle::sqlNumResultCols(SQLSMALLINT *numColumns)
 
 SQLRETURN StatementHandle::sqlFetch()
 {
-    ++_rowIdx;
-    if (_rowIdx >= _resultSet.size()) {
-        return SQL_NO_DATA;
+    if (_cursor.get()) {
+        if (!_cursor->more()) {
+            return SQL_NO_DATA;
+        }
+        _row = _cursor->next();
+    } else {
+        ++_rowIdx;
+        if (_rowIdx >= _resultSet.size()) {
+            return SQL_NO_DATA;
+        }
     }
 
     return SQL_SUCCESS;
@@ -360,23 +382,41 @@ SQLRETURN StatementHandle::sqlGetData(SQLUSMALLINT columnNum,
                      SQLLEN len,
                      SQLLEN *lenPtr)
 {
-    std::list<Result>::const_iterator it =
-        _resultSet[_rowIdx].begin();
-    for (int i = 1; i < columnNum; ++i) {
-        ++it;
-    }
+    if (_cursor.get()) {
+        if (columnNum >= _cursorColumns.size()) {
+            return SQL_ERROR;
+        }
+        std::pair<std::string, mongo::BSONType>& field =
+            _cursorColumns[columnNum];
+        switch(type) {
+          case SQL_C_CHAR: {
+          } break;
+          case SQL_C_ULONG: {
+              *((unsigned long int *)valuePtr) = _row.getIntField(field.first.c_str());
+          } break;
+          default: {
+            return SQL_ERROR;
+          } break;
+        }
+    } else {
+        std::list<Result>::const_iterator it =
+            _resultSet[_rowIdx].begin();
+        for (int i = 1; i < columnNum; ++i) {
+            ++it;
+        }
 
-    switch(type) {
-      case SQL_C_CHAR: {
-        const std::string& str = boost::get<std::string>(*it);
-        int copyLen = (len > (str.size() - 1) ? str.size() : len - 1);
-        strncpy((char *)valuePtr, str.c_str(), copyLen);
-        ((char *)valuePtr)[copyLen] = '\0';
-        *lenPtr = copyLen + 1;
-      } break;
-      default: {
-        return SQL_ERROR;
-      } break;
+        switch(type) {
+          case SQL_C_CHAR: {
+            const std::string& str = boost::get<std::string>(*it);
+            int copyLen = (len > (str.size() - 1) ? str.size() : len - 1);
+            strncpy((char *)valuePtr, str.c_str(), copyLen);
+            ((char *)valuePtr)[copyLen] = '\0';
+            *lenPtr = copyLen + 1;
+          } break;
+          default: {
+            return SQL_ERROR;
+          } break;
+        }
     }
 
     return SQL_SUCCESS;

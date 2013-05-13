@@ -55,6 +55,10 @@ class StatementHandle {
 
     // cursor used to store the result of a datbase query that is retrurned incrementally
     std::auto_ptr<mongo::DBClientCursor> _cursor;
+    // vector of (name, type) pairs for the current cursor - based on the first element
+    std::vector<std::pair<std::string, mongo::BSONType> > _cursorColumns;
+    // the last row returned in SQLFetch
+    mongo::BSONObj _row;
 
     // parser for SQL statements
     SQLParser<std::string::const_iterator> _parser;
