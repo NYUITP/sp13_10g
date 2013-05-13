@@ -25,7 +25,7 @@ TEST(SQLSelectStatement, Breathing)
 {
     mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
     mongoodbc::SQLSelectStatement stmt;
-    std::string query("SELECT * FROM table");
+    std::string query("SELECT * FROM db.table");
     std::string::const_iterator iter = query.begin();
     std::string::const_iterator end = query.end();
     try
@@ -44,7 +44,7 @@ TEST(SQLSelectStatement, SelectStar)
 {
     mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
     mongoodbc::SQLSelectStatement stmt;
-    std::string query("SELECT * FROM table");
+    std::string query("SELECT * FROM db.table");
     std::string::const_iterator iter = query.begin();
     std::string::const_iterator end = query.end();
     try
@@ -90,7 +90,7 @@ TEST(SQLSelectStatement, SelectAllStar)
 {
     mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
     mongoodbc::SQLSelectStatement stmt;
-    std::string query("SELECT ALL * FROM table");
+    std::string query("SELECT ALL * FROM db.table");
     std::string::const_iterator iter = query.begin();
     std::string::const_iterator end = query.end();
     try
@@ -113,7 +113,7 @@ TEST(SQLSelectStatement, SelectDistinctStar)
 {
     mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
     mongoodbc::SQLSelectStatement stmt;
-    std::string query("SELECT DISTINCT * FROM table");
+    std::string query("SELECT DISTINCT * FROM db.table");
     std::string::const_iterator iter = query.begin();
     std::string::const_iterator end = query.end();
     try
@@ -136,7 +136,7 @@ TEST(SQLSelectStatement, SelectColumn)
 {
     mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
     mongoodbc::SQLSelectStatement stmt;
-    std::string query("SELECT columnName FROM table");
+    std::string query("SELECT columnName FROM db.table");
     std::string::const_iterator iter = query.begin();
     std::string::const_iterator end = query.end();
     try
@@ -159,7 +159,7 @@ TEST(SQLSelectStatement, SelectTableColumn)
 {
     mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
     mongoodbc::SQLSelectStatement stmt;
-    std::string query("SELECT tableName.columnName FROM table");
+    std::string query("SELECT tableName.columnName FROM db.table");
     std::string::const_iterator iter = query.begin();
     std::string::const_iterator end = query.end();
     try
@@ -182,7 +182,7 @@ TEST(SQLSelectStatement, SelectStarWhere)
 {
     mongoodbc::SQLSelectStatementParser<std::string::const_iterator> parser;
     mongoodbc::SQLSelectStatement stmt;
-    std::string query("SELECT * FROM table WHERE age > 5");
+    std::string query("SELECT * FROM db.table WHERE age > 5");
     std::string::const_iterator iter = query.begin();
     std::string::const_iterator end = query.end();
     try
