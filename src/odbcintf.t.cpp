@@ -46,15 +46,15 @@ class ODBCIntfTest : public ::testing::Test {
 
         SQLRETURN ret;
         // allocate environment handle
-        ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_endHandle);
+        ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &_envHandle);
         ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         // ask for ODBC 3.0
-        ret = SQLSetEnvAttr(_endHandle, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
+        ret = SQLSetEnvAttr(_envHandle, SQL_ATTR_ODBC_VERSION, (void *) SQL_OV_ODBC3, 0);
         ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         // allocate a connection handle
-        ret = SQLAllocHandle(SQL_HANDLE_DBC, _endHandle, &_dbHandle);
+        ret = SQLAllocHandle(SQL_HANDLE_DBC, _envHandle, &_dbHandle);
         ASSERT_TRUE(SQL_SUCCEEDED(ret));
 
         SQLCHAR outstr[1024];
@@ -81,14 +81,14 @@ class ODBCIntfTest : public ::testing::Test {
         EXPECT_TRUE(SQL_SUCCEEDED(ret));
 
         // free environment handle
-        ret = SQLFreeHandle(SQL_HANDLE_ENV, _endHandle);
+        ret = SQLFreeHandle(SQL_HANDLE_ENV, _envHandle);
         EXPECT_TRUE(SQL_SUCCEEDED(ret));
     }
     
     std::string _dbName;
     mongo::DBClientConnection _conn;
 
-    SQLHENV _endHandle;
+    SQLHENV _envHandle;
     SQLHDBC _dbHandle;
     SQLHSTMT _stmtHandle;
 };

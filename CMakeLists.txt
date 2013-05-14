@@ -108,13 +108,13 @@ TARGET_LINK_LIBRARIES(sql_element_search_condition_unittest
 mongoodbc
 gtest)
 
-ADD_EXECUTABLE(breathing
-test/breathing.cpp
-)
+ADD_EXECUTABLE(mongo_odbc_demo
+demo/mongo_odbc_demo.m.cpp)
 
-TARGET_LINK_LIBRARIES(breathing
-odbc
-)
+TARGET_LINK_LIBRARIES(mongo_odbc_demo
+mongoodbc
+readline)
+
 
 INSTALL(TARGETS mongoodbc
         LIBRARY DESTINATION lib

@@ -200,21 +200,30 @@ SQLRETURN StatementHandle::sqlColumns(SQLCHAR *catalogName,
     if (0 != rc) {
         return SQL_ERROR;
     }
+    std::string schemaNameStr;
     if (NULL != schemaName) {
-        std::string schemaNameStr;
         if (schemaNameLen == SQL_NTS) {
             schemaNameStr.assign((char *)schemaName);
         } else {
             schemaNameStr.assign((char *)schemaName, (int)schemaNameLen);
         }
-
-        // TODO: filter 'schemas'
+    }
+    std::string tableNameStr;
+    if (NULL != tableName) {
+        if (tableNameLen == SQL_NTS) {
+            tableNameStr.assign((char *)tableName);
+        } else {
+            tableNameStr.assign((char *)tableName, (int)tableNameLen);
+        }
     }
     
     // map from schema name to table names
     for (std::list<std::string>::const_iterator it = schemas.begin();
          it != schemas.end();
          ++it) {
+        if (schemaNameStr.size() && *it != schemaNameStr) {
+            continue;
+        }
         std::list<std::string> tables;
         int rc = _connHandle->getCollectionNames(*it, &tables);
         if (0 != rc) {
@@ -233,9 +242,12 @@ SQLRETURN StatementHandle::sqlColumns(SQLCHAR *catalogName,
                 // skip mongodb internal tables
                 continue;
             }
+            if (tableNameStr.size() && tableName != tableNameStr) {
+                continue;
+            }
 
             std::auto_ptr<mongo::DBClientCursor> cursor =
-                _connHandle->query(tableName, mongo::BSONObj(), 1);
+                _connHandle->query(*tableIt);
 
             int columnNum = 1;
             while (cursor->more()) {
@@ -264,28 +276,9 @@ SQLRETURN StatementHandle::sqlColumns(SQLCHAR *catalogName,
                     results.push_back(columnNum++);
                     results.push_back("\"YES\"");
                 }
+                break;
             }
         }
-    }
-    if (NULL != tableName) {
-        std::string tableNameStr;
-        if (tableNameLen == SQL_NTS) {
-            tableNameStr.assign((char *)tableName);
-        } else {
-            tableNameStr.assign((char *)tableName, (int)tableNameLen);
-        }
-
-        //TODO: filter 'tables'
-    }
-    if (NULL != columnName) {
-        std::string columnNameStr;
-        if (columnNameLen == SQL_NTS) {
-            columnNameStr.assign((char *)columnName);
-        } else {
-            columnNameStr.assign((char *)columnName, (int)columnNameLen);
-        }
-
-        // TODO: filter 'columns'
     }
     return SQL_SUCCESS;
 }
@@ -313,9 +306,7 @@ SQLRETURN StatementHandle::sqlExec(SQLCHAR *query,
         return SQL_ERROR;
     }
 
-    std::cout << "Parsed SQL Query: " << stmt << std::endl;
-
-    SQLSelectStatement& selectStmt = boost::get<SQLSelectStatement>(stmt);
+    SQLSelectStatement& selectStmt = stmt;
 
     if (!selectStmt._whereClause) {
         // set to a blank query
@@ -351,11 +342,14 @@ SQLRETURN StatementHandle::sqlExec(SQLCHAR *query,
     
 SQLRETURN StatementHandle::sqlNumResultCols(SQLSMALLINT *numColumns)
 {
-    *numColumns = 0;
-    if (0 == _resultSet.size()) {
-        return SQL_ERROR;
+    if (_cursor.get()) {
+        *numColumns = _cursorColumns.size();
+    } else {
+        if (0 == _resultSet.size()) {
+            return SQL_ERROR;
+        }
+        *numColumns = (SQLSMALLINT)_resultSet[0].size();
     }
-    *numColumns = (SQLSMALLINT)_resultSet[0].size();
     return SQL_SUCCESS;
 }
 
@@ -383,11 +377,11 @@ SQLRETURN StatementHandle::sqlGetData(SQLUSMALLINT columnNum,
                      SQLLEN *lenPtr)
 {
     if (_cursor.get()) {
-        if (columnNum >= _cursorColumns.size()) {
+        if (columnNum > _cursorColumns.size()) {
             return SQL_ERROR;
         }
         std::pair<std::string, mongo::BSONType>& field =
-            _cursorColumns[columnNum];
+            _cursorColumns[columnNum - 1];
         switch(type) {
           case SQL_C_CHAR: {
           } break;

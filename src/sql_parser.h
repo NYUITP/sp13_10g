@@ -34,18 +34,17 @@ namespace mongoodbc {
 /*
 * Type representing all possible SQL statements.
 */
-typedef boost::variant<SQLSelectStatement, bool> SQLStatement;
+typedef SQLSelectStatement SQLStatement;
 
 /*
 * Class implementing an SQL parser for the minimal set of SQL required by ODBC.
 */
 template <typename It>
 struct SQLParser : qi::grammar<It, SQLStatement(), ascii::space_type> {
-  private:
     qi::rule<It, SQLStatement(), ascii::space_type> _start;
 
     SQLSelectStatementParser<It> _selectStmtParser;
-  public:
+
     SQLParser();
 };
 
@@ -53,7 +52,7 @@ template <typename It>
 SQLParser<It>::SQLParser()
     : SQLParser::base_type(_start)
 {
-    _start %= _selectStmtParser._rule | qi::attr(false);
+    _start %= _selectStmtParser._rule;
 
     BOOST_SPIRIT_DEBUG_NODE(_start);
 }
